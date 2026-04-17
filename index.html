@@ -24,6 +24,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 /* MAIN */
 .main{max-width:1200px;margin:0 auto;padding:20px}
 .hidden{display:none!important}
+.sf-ch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.sf-ch-btn{padding:7px 16px;border-radius:20px;border:2px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#666;transition:all .2s}
+.sf-ch-btn.active{background:var(--pr);border-color:var(--pr);color:#fff}
+.sf-ch-btn.cp.active{background:#1a4fd6;border-color:#1a4fd6;color:#fff}
+.sf-ch-btn.ss.active{background:#03C75A;border-color:#03C75A;color:#fff}
+.sf-ch-btn.dg.active{background:#FF7E36;border-color:#FF7E36;color:#fff}
+.sf-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:#f8f9fa;padding:12px 14px;border-radius:10px;margin-bottom:14px}
+.sf-item{display:flex;flex-direction:column;gap:4px}
+.sf-lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase}
+.sf-item input,.sf-item select{padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.sf-item input:focus,.sf-item select:focus{border-color:var(--pr);outline:none}
+.sf-search{flex:1;min-width:160px}
+.filter-stat-bar{background:linear-gradient(135deg,#fff9f5,#fff3ed);border:1.5px solid #ffceb4;border-radius:10px;padding:10px 16px;margin-bottom:12px;font-size:13px;color:#555}
+.day-group{margin-bottom:20px}
+.day-header{font-size:13px;font-weight:700;color:#444;padding:8px 4px 6px;border-bottom:2px solid #eee;margin-bottom:6px}
+.day-meta{font-weight:400;color:#888;margin-left:8px}
+.opt-badge{background:#f0f0f0;border-radius:5px;padding:2px 7px;font-size:12px;font-weight:600}
+.tr-cp td:first-child{border-left:3px solid #1a4fd6}
+.tr-ss td:first-child{border-left:3px solid #03C75A}
+.tr-dg td:first-child{border-left:3px solid #FF7E36}
+.track-no{font-size:11px;color:#aaa;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.muted{color:#aaa}
 /* SECTION */
 .sec{background:#fff;border-radius:var(--ra);padding:20px;margin-bottom:16px;box-shadow:var(--sh);border:1px solid var(--bd)}
 /* INFO CARD */
@@ -180,6 +202,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 <div id="tab-settlement" class="hidden">
   <div id="settle-summary"></div>
   <div class="sec">
+    <!-- 채널 탭 필터 -->
+    <div class="sf-ch" id="sf-ch-wrap">
+      <button class="sf-ch-btn active" data-ch="전체" onclick="setSettleChannel(this)">전체</button>
+      <button class="sf-ch-btn cp" data-ch="쿠팡" onclick="setSettleChannel(this)">🛒 쿠팡</button>
+      <button class="sf-ch-btn ss" data-ch="스마트스토어" onclick="setSettleChannel(this)">🟢 스마트스토어</button>
+      <button class="sf-ch-btn dg" data-ch="당근마켓" onclick="setSettleChannel(this)">🥕 당근마켓</button>
+    </div>
+    <!-- 상세 필터 -->
+    <div class="sf-bar">
+      <div class="sf-item">
+        <label class="sf-lbl">옵션</label>
+        <select id="sf-opt" onchange="renderSettlement()">
+          <option value="">전체</option>
+          <option value="2kg">2kg</option>
+          <option value="3kg">3kg</option>
+          <option value="5kg">5kg</option>
+        </select>
+      </div>
+      <div class="sf-item">
+        <label class="sf-lbl">주문일 시작</label>
+        <input type="date" id="sf-date-from" onchange="renderSettlement()">
+      </div>
+      <div class="sf-item">
+        <label class="sf-lbl">주문일 종료</label>
+        <input type="date" id="sf-date-to" onchange="renderSettlement()">
+      </div>
+      <div class="sf-item sf-search">
+        <label class="sf-lbl">수취인 검색</label>
+        <input type="text" id="sf-name" placeholder="이름 입력..." oninput="renderSettlement()">
+      </div>
+      <button class="btn-sm btn-ol" onclick="resetSettleFilter()" style="align-self:flex-end">초기화</button>
+    </div>
+    <!-- 필터 결과 통계 -->
+    <div id="settle-filter-stats"></div>
     <div id="settle-table"></div>
     <div class="brow">
       <button class="btn btn-ol" onclick="exportSettlement()">📥 정산 엑셀 다운로드</button>
@@ -577,22 +633,98 @@ function renderTrackingResult(orders, matched, unmatched) {
   document.getElementById('tracking-result').innerHTML=`<div class="srow"><div class="sbox ok"><div class="snum">${matched}</div><div class="slbl">매칭 성공</div></div><div class="sbox warn"><div class="snum">${unmatched}</div><div class="slbl">미매칭</div></div></div><table class="tbl"><thead><tr><th>수취인</th><th>채널</th><th>옵션</th><th>송장번호</th></tr></thead><tbody>${rows}</tbody></table><p class="hint">업로드 파일이 자동 다운로드됩니다. 매칭된 채널의 파일만 생성됩니다.</p>`;
 }
 
+let _sfChannel = '전체';
+function setSettleChannel(btn) {
+  _sfChannel = btn.dataset.ch;
+  document.querySelectorAll('.sf-ch-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSettlement();
+}
+function resetSettleFilter() {
+  _sfChannel = '전체';
+  document.querySelectorAll('.sf-ch-btn').forEach(b=>b.classList.remove('active'));
+  const all = document.querySelector('.sf-ch-btn[data-ch="전체"]');
+  if(all) all.classList.add('active');
+  const el = (id)=>document.getElementById(id);
+  if(el('sf-opt')) el('sf-opt').value='';
+  if(el('sf-date-from')) el('sf-date-from').value='';
+  if(el('sf-date-to')) el('sf-date-to').value='';
+  if(el('sf-name')) el('sf-name').value='';
+  renderSettlement();
+}
 function renderSettlement() {
   const s=S.settlement;
+  const el=(id)=>document.getElementById(id);
+  // 전체 요약 (필터 전)
   if(!s.length){
-    document.getElementById('settle-summary').innerHTML='<div class="sec"><div class="empty">정산 데이터가 없습니다<br><small>송장 처리 후 자동 생성됩니다</small></div></div>';
-    document.getElementById('settle-table').innerHTML=''; return;
+    el('settle-summary').innerHTML='<div class="sec"><div class="empty">정산 데이터가 없습니다<br><small>송장 처리 후 자동 생성됩니다</small></div></div>';
+    el('settle-table').innerHTML='';
+    if(el('settle-filter-stats')) el('settle-filter-stats').innerHTML='';
+    return;
   }
-  const totRev=s.reduce((a,x)=>a+(x.salePrice||0),0), totCost=s.reduce((a,x)=>a+(x.costPrice||0),0);
-  const totFee=s.reduce((a,x)=>a+(x.fee||0),0), totProfit=s.reduce((a,x)=>a+(x.profit||0),0);
+  const totRev=s.reduce((a,x)=>a+(x.salePrice||0),0);
+  const totProfit=s.reduce((a,x)=>a+(x.profit||0),0);
   const avgMgn=totRev>0?(totProfit/totRev*100).toFixed(1):0;
   const bdown=['쿠팡','스마트스토어','당근마켓'].map(ch=>{
     const it=s.filter(x=>x.channel===ch); if(!it.length) return '';
-    return `<div class="sbox" style="border-color:${CH_BG[ch]};background:${CH_BG[ch]}"><div style="color:${CH_TX[ch]};font-weight:700">${ch}</div><div class="snum">${it.length}건</div><div class="slbl">매출 ${fmtPrice(it.reduce((a,x)=>a+(x.salePrice||0),0))}<br>순이익 <strong>${fmtPrice(it.reduce((a,x)=>a+(x.profit||0),0))}</strong></div></div>`;
+    return `<div class="sbox" style="border-left:4px solid ${CH_BG[ch]}"><div style="color:${CH_TX[ch]};font-weight:700;font-size:13px">${ch}</div><div class="snum" style="font-size:20px">${it.length}건</div><div class="slbl">매출 ${fmtPrice(it.reduce((a,x)=>a+(x.salePrice||0),0))}<br>순이익 <strong style="color:var(--ok)">${fmtPrice(it.reduce((a,x)=>a+(x.profit||0),0))}</strong></div></div>`;
   }).join('');
-  document.getElementById('settle-summary').innerHTML=`<div class="sec"><div class="srow"><div class="sbox"><div class="snum">${fmtPrice(totRev)}</div><div class="slbl">총 매출</div></div><div class="sbox ok"><div class="snum">${fmtPrice(totProfit)}</div><div class="slbl">총 순이익</div></div><div class="sbox"><div class="snum">${avgMgn}%</div><div class="slbl">평균 마진율</div></div><div class="sbox"><div class="snum">${s.length}건</div><div class="slbl">총 정산건수</div></div></div><div class="srow">${bdown}</div></div>`;
-  const rows=s.map((x,i)=>`<tr><td>${i+1}</td><td>${x.orderDate}</td><td>${x.name}</td><td>${x.option||x.size||'–'}</td><td>${chTag(x.channel)}</td><td class="num">${fmtPrice(x.salePrice)}</td><td class="num">${fmtPrice(x.costPrice)}</td><td class="num">${fmtPrice(x.fee)}</td><td class="num profit">${fmtPrice(x.profit)}</td><td class="num">${x.margin}%</td><td style="font-size:12px">${x.trackingNo||'–'}</td></tr>`).join('');
-  document.getElementById('settle-table').innerHTML=`<table class="tbl"><thead><tr><th>#</th><th>주문일</th><th>수취인</th><th>옵션</th><th>채널</th><th>판매가</th><th>매입가</th><th>수수료</th><th>순이익</th><th>마진</th><th>송장번호</th></tr></thead><tbody>${rows}</tbody></table>`;
+  el('settle-summary').innerHTML=`<div class="sec"><div class="srow"><div class="sbox"><div class="snum">${fmtPrice(totRev)}</div><div class="slbl">총 매출</div></div><div class="sbox ok"><div class="snum">${fmtPrice(totProfit)}</div><div class="slbl">총 순이익</div></div><div class="sbox"><div class="snum">${avgMgn}%</div><div class="slbl">평균 마진율</div></div><div class="sbox"><div class="snum">${s.length}건</div><div class="slbl">총 정산건수</div></div></div><div class="srow">${bdown}</div></div>`;
+  // 필터 적용
+  const fCh = _sfChannel||'전체';
+  const fOpt = el('sf-opt') ? el('sf-opt').value : '';
+  const fFrom = el('sf-date-from') ? el('sf-date-from').value : '';
+  const fTo = el('sf-date-to') ? el('sf-date-to').value : '';
+  const fName = el('sf-name') ? el('sf-name').value.trim() : '';
+  let filtered = s;
+  if(fCh !== '전체') filtered = filtered.filter(x=>x.channel===fCh);
+  if(fOpt) filtered = filtered.filter(x=>(x.option||x.size||'').includes(fOpt));
+  if(fFrom) filtered = filtered.filter(x=>x.orderDate >= fFrom);
+  if(fTo) filtered = filtered.filter(x=>x.orderDate <= fTo);
+  if(fName) filtered = filtered.filter(x=>(x.name||'').includes(fName));
+  // 필터 결과 미니 통계
+  const fRev=filtered.reduce((a,x)=>a+(x.salePrice||0),0);
+  const fProfit=filtered.reduce((a,x)=>a+(x.profit||0),0);
+  const fMgn=fRev>0?(fProfit/fRev*100).toFixed(1):0;
+  const isFiltered = fCh!=='전체'||fOpt||fFrom||fTo||fName;
+  if(el('settle-filter-stats')) {
+    el('settle-filter-stats').innerHTML = isFiltered
+      ? `<div class="filter-stat-bar">🔍 필터 결과 <strong>${filtered.length}건</strong> | 매출 <strong>${fmtPrice(fRev)}</strong> | 순이익 <strong style="color:var(--ok)">${fmtPrice(fProfit)}</strong> | 마진 <strong>${fMgn}%</strong></div>`
+      : '';
+  }
+  if(!filtered.length){
+    el('settle-table').innerHTML='<div class="empty" style="padding:24px">해당 조건의 정산 내역이 없습니다</div>';
+    return;
+  }
+  // 날짜별 그룹화 렌더링
+  const dates=[...new Set(filtered.map(x=>x.orderDate))].sort().reverse();
+  let html='';
+  dates.forEach(d=>{
+    const dayItems=filtered.filter(x=>x.orderDate===d);
+    const dayRev=dayItems.reduce((a,x)=>a+(x.salePrice||0),0);
+    const dayProfit=dayItems.reduce((a,x)=>a+(x.profit||0),0);
+    html+=`<div class="day-group">
+      <div class="day-header">📅 ${d} <span class="day-meta">${dayItems.length}건 · 매출 ${fmtPrice(dayRev)} · 순이익 <strong style="color:var(--ok)">${fmtPrice(dayProfit)}</strong></span></div>
+      <table class="tbl">
+        <thead><tr><th>#</th><th>수취인</th><th>옵션</th><th>채널</th><th>판매가</th><th>매입가</th><th>수수료</th><th>순이익</th><th>마진</th><th>송장번호</th></tr></thead>
+        <tbody>
+          ${dayItems.map((x,i)=>`<tr class="tr-${x.channel==='쿠팡'?'cp':x.channel==='스마트스토어'?'ss':'dg'}">
+            <td>${i+1}</td>
+            <td>${x.name}</td>
+            <td><span class="opt-badge">${x.option||x.size||'–'}</span></td>
+            <td>${chTag(x.channel)}</td>
+            <td class="num">${fmtPrice(x.salePrice)}</td>
+            <td class="num muted">${fmtPrice(x.costPrice)}</td>
+            <td class="num muted">${fmtPrice(x.fee)}</td>
+            <td class="num profit">${fmtPrice(x.profit)}</td>
+            <td class="num">${x.margin}%</td>
+            <td class="track-no">${x.trackingNo||'–'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  el('settle-table').innerHTML=html;
 }
 
 // =====================================================
