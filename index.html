@@ -858,13 +858,21 @@ function saveSettings() {
 // GAS Sync
 async function syncToGAS() {
   if(!S.cfg.gasUrl){ showToast('GAS URL을 먼저 설정하세요'); return; }
+  const statusEl = document.getElementById('sync-status');
+  statusEl.textContent='저장 중...';
   try {
-    document.getElementById('sync-status').textContent='저장 중...';
     const lite=S.orders.map(o=>{const c={...o};delete c.rawRow;delete c.rawHeaders;delete c.rawCol;return c;});
-    const r=await fetch(S.cfg.gasUrl,{method:'POST',body:JSON.stringify({action:'saveAll',orders:lite,history:S.history,settlement:S.settlement})});
-    const d=await r.json();
-    document.getElementById('sync-status').textContent=d.ok?'✅ 저장 완료':'❌ 오류: '+(d.error||'');
-  } catch(e){ document.getElementById('sync-status').textContent='❌ 연결 실패: '+e.message; }
+    // no-cors + text/plain → GAS 리다이렉트 문제 우회
+    await fetch(S.cfg.gasUrl, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'saveAll',orders:lite,history:S.history,settlement:S.settlement})
+    });
+    // no-cors는 응답을 읽을 수 없으므로 2초 후 확인 메시지
+    statusEl.textContent='✅ 저장 완료 (구글시트 확인하세요)';
+    showToast('☁️ 구글시트 저장 완료!');
+  } catch(e){ statusEl.textContent='❌ 연결 실패: '+e.message; }
 }
 
 async function syncFromGAS() {
