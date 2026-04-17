@@ -377,6 +377,7 @@ function loadState() {
   } catch(e) {}
 }
 
+let _autoSyncTimer = null;
 function saveState() {
   // rawRow/rawHeaders/rawCol 은 localStorage 용량 절약을 위해 제외
   const ordersLite = S.orders.map(o => { const c={...o}; delete c.rawRow; delete c.rawHeaders; delete c.rawCol; return c; });
@@ -384,6 +385,33 @@ function saveState() {
   localStorage.setItem('dm_history', JSON.stringify(S.history));
   localStorage.setItem('dm_settle', JSON.stringify(S.settlement));
   localStorage.setItem('dm_cfg', JSON.stringify(S.cfg));
+  // GAS URL 설정돼 있으면 3초 후 자동 싱크 (디바운스)
+  if(S.cfg.gasUrl) {
+    clearTimeout(_autoSyncTimer);
+    setAutoSyncIndicator('대기중...');
+    _autoSyncTimer = setTimeout(() => autoSyncToGAS(), 3000);
+  }
+}
+
+function setAutoSyncIndicator(msg) {
+  const el = document.getElementById('auto-sync-status');
+  if(el) el.textContent = msg;
+}
+
+async function autoSyncToGAS() {
+  if(!S.cfg.gasUrl) return;
+  setAutoSyncIndicator('☁️ 저장 중...');
+  try {
+    const lite = S.orders.map(o=>{const c={...o};delete c.rawRow;delete c.rawHeaders;delete c.rawCol;return c;});
+    await fetch(S.cfg.gasUrl, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'saveAll', orders:lite, history:S.history, settlement:S.settlement})
+    });
+    setAutoSyncIndicator('☁️ 저장됨 ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    setAutoSyncIndicator('⚠️ 저장 실패');
+  }
 }
 
 // =====================================================
@@ -858,21 +886,11 @@ function saveSettings() {
 // GAS Sync
 async function syncToGAS() {
   if(!S.cfg.gasUrl){ showToast('GAS URL을 먼저 설정하세요'); return; }
-  const statusEl = document.getElementById('sync-status');
-  statusEl.textContent='저장 중...';
-  try {
-    const lite=S.orders.map(o=>{const c={...o};delete c.rawRow;delete c.rawHeaders;delete c.rawCol;return c;});
-    // no-cors + text/plain → GAS 리다이렉트 문제 우회
-    await fetch(S.cfg.gasUrl, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'saveAll',orders:lite,history:S.history,settlement:S.settlement})
-    });
-    // no-cors는 응답을 읽을 수 없으므로 2초 후 확인 메시지
-    statusEl.textContent='✅ 저장 완료 (구글시트 확인하세요)';
-    showToast('☁️ 구글시트 저장 완료!');
-  } catch(e){ statusEl.textContent='❌ 연결 실패: '+e.message; }
+  clearTimeout(_autoSyncTimer);
+  document.getElementById('sync-status').textContent='저장 중...';
+  await autoSyncToGAS();
+  document.getElementById('sync-status').textContent='✅ 저장 완료';
+  showToast('☁️ 구글시트 저장 완료!');
 }
 
 async function syncFromGAS() {
