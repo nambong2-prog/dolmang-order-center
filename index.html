@@ -659,10 +659,8 @@ function submitManualOrder(e) {
 function openSettings() {
   document.getElementById('gas-url').value=S.cfg.gasUrl||'';
   const hasGas=!!S.cfg.gasUrl;
-  document.getElementById('btn-sync-from').style.display=hasGas?'inline-flex':'
-one';
-  document.getElementById('btn-sync-to').style.display=hasGas?'inline-flex':'
-one';
+  document.getElementById('btn-sync-from').style.display=hasGas?'inline-flex':'none';
+  document.getElementById('btn-sync-to').style.display=hasGas?'inline-flex':'none';
   document.getElementById('modal-cfg').classList.remove('hidden');
 }
 
