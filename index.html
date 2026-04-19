@@ -615,10 +615,41 @@ function processTracking(tmap) {
 // EXCEL EXPORT
 // =====================================================
 function genBaljooWb(orders) {
-  const hdr = ['번호','받는사람','전화번호','우편번호','주소','상품(옵션)','수량','배송메세지','특기사항'];
-  const rows = orders.map((o,i)=>[i+1,o.name,o.phone,o.zipcode,o.address,o.option||o.size,o.qty,o.deliveryMsg,`${CH_PFX[o.channel]||''} ${o.orderId}`.trim()]);
-  const wb=XLSX.utils.book_new(), ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
-  ws['!cols']=hdr.map(()=>({wch:22})); XLSX.utils.book_append_sheet(wb,ws,'발주서'); return wb;
+  // 소낭친환경 배송 시스템 포맷 (샘플 기준)
+  const SENDER_NAME    = '돌망돌망';
+  const SENDER_ADDR    = '제주특별자치도 서귀포시 표선면 서성일로 89';
+  const SENDER_PHONE   = '010-2272-3645';
+  const DELIVERY_FEE   = 4500;
+
+  const hdr = [
+    '보내는사람(지정)','우편번호(지정)','주소(지정)','전화번호1(지정)','전화번호2(지정)',
+    '받는사람','우편번호','주소','전화번호1','전화번호2',
+    '수량(A타입)','수량(B타입)','수량(C타입)','운임구분','상품명1','특기사항','운임'
+  ];
+
+  const rows = orders.map(o => {
+    // 옵션에서 kg 단위 추출 (예: '2kg', '흙당근 3kg', '5kg 1개' 등)
+    const optRaw = String(o.option || o.size || '');
+    const kgMatch = optRaw.match(/(\d+)\s*kg/i);
+    const kgStr = kgMatch ? kgMatch[1] + 'kg' : optRaw || '2kg';
+    const qty = o.qty || 1;
+    const productLabel = `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${kgStr} ${qty}개)`;
+    const note = String(o.deliveryMsg || '').trim();
+
+    return [
+      SENDER_NAME, null, SENDER_ADDR, SENDER_PHONE, null,
+      o.name, o.zipcode||null, o.address, o.phone, null,
+      qty, 0, 0, 3,
+      productLabel, note, DELIVERY_FEE
+    ];
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([hdr, ...rows]);
+  const colWidths = [12,8,40,14,8,10,8,40,14,8,10,10,10,8,60,20,8];
+  ws['!cols'] = colWidths.map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws, '발주서');
+  return wb;
 }
 
 function genCoupangUpload(orders) {
@@ -649,7 +680,7 @@ function downloadBaljoo(force) {
   const orders = force ? S.orders : S.orders.filter(o=>!inHistory(o));
   if(!orders.length){ showToast(force?'⚠️ 주문이 없습니다':'⚠️ 신규 주문이 없습니다'); return; }
   const dt=todayStr().replace(/-/g,'');
-  XLSX.writeFile(genBaljooWb(orders), `${force?'합산':''}_발주서_${dt}.xlsx`.replace(/^_/,''));
+  XLSX.writeFile(genBaljooWb(orders), `${dt} 돌망돌망발주${force?'_합산':''}.xlsx`);
   if(!force){ orders.forEach(o=>{ if(o.status==='pending') o.status='baljoo'; }); saveState(); renderAll(); }
   showToast(`✅ 발주서 생성 완료 (${orders.length}건)`);
 }
