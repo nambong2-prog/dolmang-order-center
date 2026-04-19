@@ -501,7 +501,7 @@ function parseOrderFile(wb, fname) {
         phone:normPhone(g(row,'수취인전화번호',27)),
         zipcode:String(g(row,'우편번호',28)||'0'),
         address:String(g(row,'수취인 주소',29)||''),
-        option:opt, size:sz, qty:1,
+        option:opt, size:sz, qty:Number(g(row,'구매수(수량)',22)||1),
         deliveryMsg:String(g(row,'배송메세지',30)||''),
         salePrice:Number(g(row,'결제액',18)||0),
         costPrice:SUPPLY[sz]||0,
