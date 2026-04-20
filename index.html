@@ -585,7 +585,7 @@ async function handleTrackingFile(file) {
 }
 
 function processTracking(tmap) {
-  const targets = S.orders.filter(o=>o.status==='pending'||o.status==='baljoo');
+  const targets = S.orders.filter(o=>['pending','baljoo','shipped'].includes(o.status));
   let matched=0, unmatched=0;
   for(const o of targets){
     const k1=`${o.name}_${normPhone(o.phone)}`, k2=`${o.name}_`;
