@@ -10,74 +10,99 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333}
 header{background:#ff6b35;color:white;padding:16px 24px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}
 header span{font-size:14px;opacity:.85;font-weight:400;margin-left:8px}
+header .gas-dot{width:9px;height:9px;border-radius:50%;background:#aaa;margin-left:auto;margin-right:4px;transition:background .3s}
+header .gas-dot.ok{background:#4caf50}
+header .gas-dot.err{background:#f44336}
+header .gas-lbl{font-size:12px;opacity:.8}
 .tab-bar{background:white;display:flex;border-bottom:2px solid #eee;padding:0 16px;overflow-x:auto}
 .tab-btn{padding:14px 22px;border:none;background:none;cursor:pointer;font-size:15px;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;font-weight:500;white-space:nowrap}
 .tab-btn.active{color:#ff6b35;border-bottom-color:#ff6b35}
 .tab-btn:hover{color:#ff6b35}
-.tab-content{display:none;padding:24px;max-width:1100px;margin:0 auto}
+.tab-content{display:none;padding:24px;max-width:1200px;margin:0 auto}
 .tab-content.active{display:block}
 .card{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .card h2{font-size:16px;font-weight:700;margin-bottom:16px;color:#222}
 .card h3{font-size:14px;font-weight:600;color:#555;margin-bottom:10px}
-.file-area{border:2px dashed #ddd;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative;min-height:90px}
+.file-area{border:2px dashed #ddd;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative;min-height:88px}
 .file-area:hover{border-color:#ff6b35;background:#fff5f0}
 .file-area.has-file{border-color:#4caf50;background:#f0fff0}
 .file-area input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
-.file-area .icon{font-size:24px;margin-bottom:4px}
+.file-area .icon{font-size:22px;margin-bottom:3px}
 .file-area .label{font-size:12px;color:#666;line-height:1.5}
 .file-area .filename{font-size:12px;color:#4caf50;font-weight:600;margin-top:4px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
-.btn-primary{background:#ff6b35;color:white}
-.btn-primary:hover{background:#e55a25}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.btn-primary{background:#ff6b35;color:white}.btn-primary:hover{background:#e55a25}
 .btn-primary:disabled{background:#ccc;cursor:not-allowed}
-.btn-success{background:#4caf50;color:white}
-.btn-success:hover{background:#388e3c}
+.btn-success{background:#4caf50;color:white}.btn-success:hover{background:#388e3c}
 .btn-success:disabled{background:#ccc;cursor:not-allowed}
-.btn-danger{background:#f44336;color:white}
-.btn-danger:hover{background:#c62828}
-.btn-outline{background:white;color:#ff6b35;border:2px solid #ff6b35}
-.btn-outline:hover{background:#fff5f0}
-.btn-sm{padding:4px 10px;font-size:12px;border-radius:6px}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px}
-.summary-box{background:#f8f8f8;border-radius:8px;padding:14px 16px;text-align:center}
-.summary-box .val{font-size:18px;font-weight:700;color:#ff6b35}
+.btn-danger{background:#f44336;color:white}.btn-danger:hover{background:#c62828}
+.btn-outline{background:white;color:#ff6b35;border:2px solid #ff6b35}.btn-outline:hover{background:#fff5f0}
+.btn-cloud{background:#1976d2;color:white}.btn-cloud:hover{background:#1565c0}
+.btn-sm{padding:4px 9px;font-size:12px;border-radius:6px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:18px}
+.summary-box{background:#f8f8f8;border-radius:8px;padding:12px 14px;text-align:center}
+.summary-box .val{font-size:17px;font-weight:700;color:#ff6b35}
 .summary-box .lbl{font-size:11px;color:#888;margin-top:2px}
 .summary-box.blue .val{color:#1976d2}
 .summary-box.green .val{color:#2e7d32}
 .summary-box.red .val{color:#c62828}
+.summary-box.orange .val{color:#e67e00}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#f5f5f5;padding:9px 10px;text-align:left;font-weight:600;border-bottom:2px solid #e0e0e0;white-space:nowrap}
-td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+th{background:#f5f5f5;padding:8px 9px;text-align:left;font-weight:600;border-bottom:2px solid #e0e0e0;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafafa}
 tr.editing td{background:#fffde7!important}
-.edit-input{border:1px solid #ffc107;border-radius:4px;padding:4px 7px;font-size:12px;width:100%;min-width:50px}
-.tbl-wrap{overflow-x:auto;margin-top:12px}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.edit-input{border:1px solid #ffc107;border-radius:4px;padding:3px 6px;font-size:12px;width:100%;min-width:48px}
+.tbl-wrap{overflow-x:auto;margin-top:10px}
+.badge{display:inline-block;padding:2px 7px;border-radius:12px;font-size:11px;font-weight:600}
 .badge-cp{background:#fff0e0;color:#e67e00}
 .badge-ss{background:#e0f0ff;color:#0066cc}
 .badge-ok{background:#e0ffe0;color:#1a8a1a}
 .badge-miss{background:#ffe0e0;color:#cc0000}
-.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.6}
+.alert{padding:11px 15px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.6}
 .alert-info{background:#e8f4fd;color:#1a6fa8;border-left:4px solid #2196f3}
 .alert-warn{background:#fff8e1;color:#8a6000;border-left:4px solid #ffc107}
 .alert-success{background:#e8f5e9;color:#1b5e20;border-left:4px solid #4caf50}
 .profit-positive{color:#1a8a1a;font-weight:700}
 .profit-negative{color:#cc0000;font-weight:700}
 .hidden{display:none}
-.divider{border:none;border-top:1px solid #eee;margin:16px 0}
+.divider{border:none;border-top:1px solid #eee;margin:14px 0}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:600px){.two-col{grid-template-columns:1fr}}
 .step-num{display:inline-flex;align-items:center;justify-content:center;background:#ff6b35;color:white;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;margin-right:4px}
-.del-btn{background:none;border:none;cursor:pointer;color:#f44336;font-size:16px;padding:2px 6px;line-height:1;border-radius:4px}
+.del-btn{background:none;border:none;cursor:pointer;color:#f44336;font-size:15px;padding:2px 5px;border-radius:4px}
 .del-btn:hover{background:#fff0f0}
+/* Filter bar */
+.filter-bar{background:#f9f9f9;border:1px solid #eee;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-bar label{font-size:12px;color:#666;font-weight:600;white-space:nowrap}
+.filter-input{border:1px solid #ddd;border-radius:6px;padding:5px 9px;font-size:13px;outline:none}
+.filter-input:focus{border-color:#ff6b35}
+.filter-select{border:1px solid #ddd;border-radius:6px;padding:5px 9px;font-size:13px;background:white;cursor:pointer;outline:none}
+.filter-tag{font-size:11px;background:#fff3e0;color:#e67e00;padding:2px 8px;border-radius:12px;font-weight:600}
+/* Sync status */
+.sync-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#888}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block}
+.sync-dot.ok{background:#4caf50}
+.sync-dot.err{background:#f44336}
+.sync-dot.spin{background:#ff6b35;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:#333;color:white;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:320px}
 .toast.show{opacity:1}
+/* Historical import section */
+.hist-section{border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-top:14px;background:#fafafa}
+.hist-section h3{margin-bottom:10px}
 </style>
 </head>
 <body>
-<header>🥕 돌망돌망 주문관리센터 <span>소낭친환경 유기농 당근</span></header>
+<header>
+  🥕 돌망돌망 주문관리센터
+  <span>소낭친환경 유기농 당근</span>
+  <span class="gas-dot" id="gasDot"></span>
+  <span class="gas-lbl" id="gasLbl"></span>
+</header>
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab(0)">📦 발주서 생성</button>
   <button class="tab-btn" onclick="switchTab(1)">🚚 송장 처리</button>
@@ -122,8 +147,11 @@ tr.editing td{background:#fffde7!important}
 <div id="tab1" class="tab-content">
   <div class="card">
     <h2>🚚 쿠팡 대량업로드 파일 생성</h2>
-    <div class="alert alert-info">소낭에서 받은 송장번호가 입력된 발주서를 업로드하면 쿠팡 대량업로드 파일이 생성됩니다.</div>
-    <div id="t1OrdOk" class="alert alert-success hidden">✅ 발주서탭에서 주문파일 로드됨 — 아래 송장파일만 업로드하면 됩니다.</div>
+    <div class="alert alert-info">
+      소낭에서 받은 송장번호 입력된 발주서를 업로드하면 쿠팡 대량업로드 파일이 생성됩니다.<br>
+      <small>💡 발주서탭에서 파일을 이미 로드한 경우 원본 주문파일 재업로드 불필요. 특기사항에 주문번호가 없어도 이름+전화번호로 자동 매칭합니다.</small>
+    </div>
+    <div id="t1OrdOk" class="alert alert-success hidden">✅ 발주서탭 주문파일 로드됨 — 송장파일만 업로드하면 됩니다.</div>
     <div id="t1OrdUpload">
       <h3><span class="step-num">1</span> 원본 쿠팡 주문파일 (DeliveryList)</h3>
       <div class="file-area" id="drop1a">
@@ -133,7 +161,7 @@ tr.editing td{background:#fffde7!important}
         <div class="filename" id="fname1a"></div>
       </div>
     </div>
-    <div style="margin-top:16px">
+    <div style="margin-top:14px">
       <h3><span class="step-num" id="t1step">2</span> 소낭 발주서 (송장번호 포함)</h3>
       <div class="file-area" id="drop1b">
         <input type="file" id="file1b" accept=".xlsx,.xls" onchange="onFile1b(this)">
@@ -158,7 +186,7 @@ tr.editing td{background:#fffde7!important}
         <button class="btn btn-success" onclick="downloadCoupangUpload()">⬇️ 쿠팡 대량업로드 파일</button>
         <button class="btn btn-outline" onclick="addToSettlement()">💰 정산에 추가</button>
       </div>
-      <div id="missAlert1" class="hidden alert alert-warn" style="margin-top:12px"></div>
+      <div id="missAlert1" class="hidden alert alert-warn" style="margin-top:10px"></div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>#</th><th>받는사람</th><th>옵션</th><th>수량</th><th>매칭</th><th>택배사</th><th>운송장번호</th></tr></thead>
@@ -171,50 +199,122 @@ tr.editing td{background:#fffde7!important}
 
 <!-- TAB 2: 정산 현황 -->
 <div id="tab2" class="tab-content">
-  <div id="s2empty" class="card hidden">
-    <div class="alert alert-info">정산 데이터가 없습니다. 송장처리 탭에서 <b>정산에 추가</b>를 클릭하세요.</div>
-  </div>
-  <div id="s2main" class="hidden">
-    <div class="card">
-      <h2>📊 정산 요약</h2>
-      <div class="summary-grid">
-        <div class="summary-box"><div class="val" id="s2count">0</div><div class="lbl">정산 건수</div></div>
-        <div class="summary-box blue"><div class="val" id="s2sales">0</div><div class="lbl">총 매출</div></div>
-        <div class="summary-box red"><div class="val" id="s2sonang">0</div><div class="lbl">소낭 정산금액</div></div>
-        <div class="summary-box red"><div class="val" id="s2fee">0</div><div class="lbl">총 수수료</div></div>
-        <div class="summary-box green"><div class="val" id="s2profit">0</div><div class="lbl">총 순이익</div></div>
-        <div class="summary-box green"><div class="val" id="s2margin">0%</div><div class="lbl">마진율</div></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-success" onclick="downloadSettlement()">⬇️ 정산 엑셀</button>
-        <button class="btn btn-danger" style="margin-left:auto" onclick="clearSettlement()">🗑️ 전체 초기화</button>
+
+  <!-- 정산 요약 -->
+  <div class="card">
+    <h2>📊 정산 요약</h2>
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-box"><div class="val" id="s2count">0</div><div class="lbl">정산 건수</div></div>
+      <div class="summary-box blue"><div class="val" id="s2sales">0</div><div class="lbl">총 매출</div></div>
+      <div class="summary-box red"><div class="val" id="s2sonang">0</div><div class="lbl">소낭 정산금액</div></div>
+      <div class="summary-box red"><div class="val" id="s2fee">0</div><div class="lbl">총 수수료</div></div>
+      <div class="summary-box green"><div class="val" id="s2profit">0</div><div class="lbl">총 순이익</div></div>
+      <div class="summary-box green"><div class="val" id="s2margin">0%</div><div class="lbl">마진율</div></div>
+      <div class="summary-box orange"><div class="val" id="s2_2kg">0건</div><div class="lbl">2kg</div></div>
+      <div class="summary-box orange"><div class="val" id="s2_3kg">0건</div><div class="lbl">3kg</div></div>
+      <div class="summary-box orange"><div class="val" id="s2_5kg">0건</div><div class="lbl">5kg</div></div>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="downloadSettlement()">⬇️ 엑셀 다운로드</button>
+      <button class="btn btn-cloud" onclick="loadFromGAS()">☁️ 구글시트 불러오기</button>
+      <button class="btn btn-cloud" onclick="saveToGASManual()">☁️ 구글시트 저장</button>
+      <button class="btn btn-outline" onclick="exportJSON()">📤 JSON 내보내기</button>
+      <label class="btn btn-outline" style="cursor:pointer">📥 JSON 가져오기<input type="file" accept=".json" onchange="importJSON(this)" style="display:none"></label>
+      <button class="btn btn-outline" onclick="toggleHistSection()">📂 이전 주문 추가</button>
+      <button class="btn btn-danger" style="margin-left:auto" onclick="clearSettlement()">🗑️ 초기화</button>
+    </div>
+
+    <div class="sync-row">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncLbl" style="font-size:12px;color:#888">-</span>
+    </div>
+
+    <!-- 이전 주문 추가 섹션 (숨김) -->
+    <div class="hist-section hidden" id="histSection">
+      <h3>📂 이전 주문파일에서 정산 추가 <span style="font-weight:400;color:#888;font-size:12px">— 송장번호 없는 과거 주문 추가용</span></h3>
+      <div class="file-area" id="dropHist" style="min-height:70px">
+        <input type="file" id="fileHist" accept=".xlsx,.xls" onchange="onFileHist(this)">
+        <div class="icon">📂</div>
+        <div class="label">쿠팡 DeliveryList 업로드 → 정산 직접 추가</div>
+        <div class="filename" id="fnameHist"></div>
       </div>
     </div>
-    <div class="card">
-      <h2>📋 정산 내역 <span style="color:#888;font-size:13px;font-weight:400">— ✏️ 수정 버튼으로 직접 편집 가능</span></h2>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>#</th><th>날짜</th><th>구매자</th><th>채널</th><th>옵션</th><th>수량</th><th>판매가</th><th>매입가</th><th>수수료</th><th>순이익</th><th>마진율</th><th>송장번호</th><th>수정/삭제</th></tr></thead>
-          <tbody id="tbodySettle"></tbody>
-        </table>
-      </div>
+  </div>
+
+  <!-- 정산 내역 테이블 -->
+  <div id="settleTableCard" class="card">
+    <h2>📋 정산 내역 <span style="color:#888;font-size:13px;font-weight:400">— ✏️ 수정 가능 | <span id="filterTag" class="filter-tag hidden">필터 적용 중</span></span></h2>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar">
+      <label>🔍 구매자</label>
+      <input class="filter-input" id="fName" placeholder="이름 검색..." style="width:110px" oninput="applyFilter()">
+      <label>채널</label>
+      <select class="filter-select" id="fChannel" onchange="applyFilter()">
+        <option value="">전체</option>
+        <option value="쿠팡">쿠팡</option>
+        <option value="스마트스토어">스마트스토어</option>
+      </select>
+      <label>옵션</label>
+      <select class="filter-select" id="fOption" onchange="applyFilter()">
+        <option value="">전체</option>
+        <option value="2kg">2kg</option>
+        <option value="3kg">3kg</option>
+        <option value="5kg">5kg</option>
+      </select>
+      <label>날짜</label>
+      <input class="filter-input" type="date" id="fFrom" onchange="applyFilter()" style="width:130px">
+      <span>~</span>
+      <input class="filter-input" type="date" id="fTo" onchange="applyFilter()" style="width:130px">
+      <button class="btn btn-sm btn-outline" onclick="clearFilter()">초기화</button>
+      <span id="filterCount" style="font-size:12px;color:#888;margin-left:4px"></span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>날짜</th><th>구매자</th><th>채널</th>
+            <th>옵션</th><th>수량</th><th>판매가</th><th>매입가</th>
+            <th>수수료</th><th>순이익</th><th>마진율</th><th>송장번호</th><th>수정/삭제</th>
+          </tr>
+        </thead>
+        <tbody id="tbodySettle"></tbody>
+      </table>
+    </div>
+    <div id="emptyMsg" class="hidden" style="text-align:center;padding:32px;color:#aaa;font-size:14px">
+      정산 데이터가 없습니다.<br><small>송장처리탭에서 <b>정산에 추가</b>를 클릭하거나 이전 주문 추가를 이용하세요.</small>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
 <script>
-/* ============================================================ CONSTANTS */
+/* ======================================================
+   CONSTANTS & CONFIG
+====================================================== */
 const SUPPLY={'2kg':12000,'3kg':15000,'5kg':21000};
 const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055};
 const SENDER={name:'돌망돌망',zip:'',addr:'제주특별자치도 서귀포시 표선면 서성일로 89',phone:'010-2272-3645'};
 const SK='dolmang_settle_v2';
+const GAS_URL='https://script.google.com/macros/s/AKfycbwE00neE8Yx0pf-iBf4SdL476ixrdCd9B5-LaxZE2LtgAr7Utr_mOEkqjlRT4CGO8Rg/exec';
 
-/* ============================================================ STATE */
-let orders0=[], rawWb0=null;   // Tab0
-let orders1=[], rawWb1=null;   // Tab1 result + original wb
+/* 4/12~4/20 시드 데이터 */
+const SEED=[{"orderId":"25100183940006","date":"2026-04-12","name":"전유진","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"28100183246433","date":"2026-04-12","name":"노일균","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"8100183991673","date":"2026-04-12","name":"황정숙","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"31100183843682","date":"2026-04-13","name":"주정호","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"9100183956496","date":"2026-04-15","name":"이혜림","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"19100184294838","date":"2026-04-15","name":"천선주","platform":"쿠팡","option":"1개 5kg","qty":1,"salePrice":27900,"costPrice":21000,"commission":3013,"profit":3887,"margin":13.9,"trackNum":"","carrier":""},{"orderId":"19100184300921","date":"2026-04-15","name":"정은영","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"27100183758973","date":"2026-04-15","name":"성영숙","platform":"쿠팡","option":"1개 5kg","qty":1,"salePrice":27900,"costPrice":21000,"commission":3013,"profit":3887,"margin":13.9,"trackNum":"","carrier":""},{"orderId":"8100184776433","date":"2026-04-15","name":"김지혜","platform":"쿠팡","option":"1개 5kg","qty":1,"salePrice":27900,"costPrice":21000,"commission":3013,"profit":3887,"margin":13.9,"trackNum":"","carrier":""},{"orderId":"21100184759411","date":"2026-04-16","name":"권장옥","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"5100184080574","date":"2026-04-16","name":"김희자","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"13100184188221","date":"2026-04-16","name":"오숙자","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"18100184240358","date":"2026-04-16","name":"황민희","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"10100184366775","date":"2026-04-16","name":"박은미","platform":"쿠팡","option":"1개 2kg","qty":1,"salePrice":15900,"costPrice":12000,"commission":1717,"profit":2183,"margin":13.7,"trackNum":"","carrier":""},{"orderId":"3100184981862","date":"2026-04-16","name":"조정자","platform":"쿠팡","option":"1개 3kg","qty":1,"salePrice":19900,"costPrice":15000,"commission":2149,"profit":2751,"margin":13.8,"trackNum":"","carrier":""},{"orderId":"29100184663903","date":"2026-04-17","name":"이혜진","platform":"쿠팡","option":"1개 3kg","qty":1,"salePrice":19900,"costPrice":15000,"commission":2149,"profit":2751,"margin":13.8,"trackNum":"","carrier":""},{"orderId":"27100184041025","date":"2026-04-17","name":"최지현","platform":"쿠팡","option":"1개 5kg","qty":1,"salePrice":27900,"costPrice":21000,"commission":3013,"profit":3887,"margin":13.9,"trackNum":"","carrier":""},{"orderId":"20100184753351","date":"2026-04-17","name":"윤여선","platform":"쿠팡","option":"1개 5kg","qty":1,"salePrice":27900,"costPrice":21000,"commission":3013,"profit":3887,"margin":13.9,"trackNum":"","carrier":""}];
 
-/* ============================================================ UTILS */
+/* ======================================================
+   STATE
+====================================================== */
+let orders0=[], rawWb0=null;
+let orders1=[], rawWb1=null;
+let gasTimer=null;
+
+/* ======================================================
+   UTILS
+====================================================== */
 const normPhone=p=>String(p||'').replace(/[^0-9]/g,'');
 const extractSize=opt=>{const m=String(opt||'').match(/(\d+)\s*kg/i);return m?m[1]+'kg':null;};
 const todayYMD=()=>new Date().toISOString().slice(0,10);
@@ -223,10 +323,74 @@ const comma=n=>Math.round(n).toLocaleString('ko-KR');
 const fmtPhone=p=>{const d=String(p||'');if(d.length===11)return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);if(d.length===10)return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);return d;};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
-const show=id=>document.getElementById(id).classList.remove('hidden');
-const hide=id=>document.getElementById(id).classList.add('hidden');
+const show=id=>document.getElementById(id)?.classList.remove('hidden');
+const hide=id=>document.getElementById(id)?.classList.add('hidden');
 
-/* ============================================================ TABS */
+/* ======================================================
+   GAS SYNC
+====================================================== */
+function setSyncStatus(state,msg){
+  const dot=document.getElementById('syncDot');
+  const lbl=document.getElementById('syncLbl');
+  if(!dot)return;
+  dot.className='sync-dot'+(state==='ok'?' ok':state==='err'?' err':state==='spin'?' spin':'');
+  lbl.textContent=msg||'';
+}
+
+async function loadFromGAS(){
+  setSyncStatus('spin','구글시트에서 불러오는 중...');
+  try{
+    const res=await fetch(GAS_URL+'?action=getAll');
+    const data=await res.json();
+    if(data.settlement&&data.settlement.length>0){
+      saveS(data.settlement);
+      renderSettle();
+      setSyncStatus('ok','구글시트 불러오기 완료 ('+data.settlement.length+'건)');
+      toast('✅ 구글시트에서 '+data.settlement.length+'건 불러옴');
+    }else{
+      setSyncStatus('ok','구글시트 정산 데이터 없음');
+      toast('구글시트에 정산 데이터가 없습니다.');
+    }
+  }catch(e){
+    setSyncStatus('err','구글시트 연결 실패');
+    toast('❌ 구글시트 연결 실패 — JSON 내보내기/가져오기로 동기화하세요.');
+    console.error(e);
+  }
+}
+
+function saveToGAS(data){
+  if(!data||!data.length)return;
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'saveAll',settlement:data})})
+    .then(()=>setSyncStatus('ok','구글시트 자동 저장 완료'))
+    .catch(()=>setSyncStatus('err','구글시트 저장 실패'));
+}
+
+function saveToGASManual(){
+  const data=loadS();
+  if(!data.length){toast('정산 데이터가 없습니다.');return;}
+  setSyncStatus('spin','저장 중...');
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'saveAll',settlement:data})})
+    .then(()=>{setSyncStatus('ok','구글시트 저장 완료 ('+data.length+'건)');toast('✅ 구글시트에 저장 완료!');})
+    .catch(e=>{setSyncStatus('err','저장 실패');toast('❌ 저장 실패: '+e.message);});
+}
+
+function scheduleAutoSave(data){
+  clearTimeout(gasTimer);
+  setSyncStatus('spin','저장 예정...');
+  gasTimer=setTimeout(()=>saveToGAS(data),3000);
+}
+
+/* ======================================================
+   LOCAL STORAGE
+====================================================== */
+function loadS(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
+function saveS(d){localStorage.setItem(SK,JSON.stringify(d));scheduleAutoSave(d);}
+
+/* ======================================================
+   TABS
+====================================================== */
 function switchTab(n){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
   document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===n));
@@ -234,21 +398,25 @@ function switchTab(n){
   if(n===2)renderSettle();
 }
 
-/* ============================================================ FILE READ */
+/* ======================================================
+   FILE READING
+====================================================== */
 function readXlsx(file){
   return new Promise((res,rej)=>{
     const r=new FileReader();
-    r.onload=e=>{try{res(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}catch(e){rej(e);}};
+    r.onload=e=>{try{res(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}catch(err){rej(err);}};
     r.onerror=rej;
     r.readAsArrayBuffer(file);
   });
 }
-function setLabel(areaId,fnId,name){
-  document.getElementById(fnId).textContent='✅ '+name;
-  document.getElementById(areaId).classList.add('has-file');
+function setLabel(aId,fId,name){
+  document.getElementById(fId).textContent='✅ '+name;
+  document.getElementById(aId).classList.add('has-file');
 }
 
-/* ============================================================ PARSING */
+/* ======================================================
+   PARSING
+====================================================== */
 function detectPlatform(headers,filename){
   if(String(filename||'').toLowerCase().includes('deliverylist'))return '쿠팡';
   if(headers.some(h=>String(h).includes('상품주문번호')))return '스마트스토어';
@@ -267,15 +435,12 @@ function parseDelivery(wb,filename){
       const orderId=String(r[2]||'').trim();
       if(!orderId)continue;
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'쿠팡',orderId,
-        orderDate:String(r[9]||'').slice(0,10),
-        option:String(r[11]||'').trim(),
-        payment:Number(r[18])||0,
-        qty:Number(r[22])||1,
+        orderDate:String(r[9]||'').slice(0,10),option:String(r[11]||'').trim(),
+        payment:Number(r[18])||0,qty:Number(r[22])||1,
         name:String(r[26]||'').trim(),phone:normPhone(r[27]),
-        zip:String(r[28]||'').trim(),addr:String(r[29]||'').trim(),
-        msg:String(r[30]||'').trim()});
+        zip:String(r[28]||'').trim(),addr:String(r[29]||'').trim(),msg:String(r[30]||'').trim()});
     }
-  } else {
+  }else{
     const hIdx=n=>headers.findIndex(h=>h.includes(n));
     const ci={oid:hIdx('상품주문번호'),name:Math.max(hIdx('수취인명'),hIdx('받는분성명')),
       phone:hIdx('수취인전화번호'),addr:Math.max(hIdx('통합배송지'),hIdx('배송지')),
@@ -286,15 +451,13 @@ function parseDelivery(wb,filename){
       const orderId=String(ci.oid>=0?r[ci.oid]:'').trim();
       if(!orderId)continue;
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'스마트스토어',orderId,orderDate:'',
-        option:String(ci.opt>=0?r[ci.opt]:'').trim(),
-        payment:Number(ci.pay>=0?r[ci.pay]:0)||0,
-        qty:Number(ci.qty>=0?r[ci.qty]:1)||1,
-        name:String(ci.name>=0?r[ci.name]:'').trim(),phone:normPhone(ci.phone>=0?r[ci.phone]:''),
-        zip:String(ci.zip>=0?r[ci.zip]:'').trim(),addr:String(ci.addr>=0?r[ci.addr]:'').trim(),
-        msg:String(ci.msg>=0?r[ci.msg]:'').trim()});
+        option:String(ci.opt>=0?r[ci.opt]:'').trim(),payment:Number(ci.pay>=0?r[ci.pay]:0)||0,
+        qty:Number(ci.qty>=0?r[ci.qty]:1)||1,name:String(ci.name>=0?r[ci.name]:'').trim(),
+        phone:normPhone(ci.phone>=0?r[ci.phone]:''),zip:String(ci.zip>=0?r[ci.zip]:'').trim(),
+        addr:String(ci.addr>=0?r[ci.addr]:'').trim(),msg:String(ci.msg>=0?r[ci.msg]:'').trim()});
     }
   }
-  return {platform,orders};
+  return{platform,orders};
 }
 function parseTrk(wb){
   const ws=wb.Sheets[wb.SheetNames[0]];
@@ -302,11 +465,8 @@ function parseTrk(wb){
   const map=new Map();
   for(let i=0;i<rows.length;i++){
     const r=rows[i];
-    const name=String(r[5]||'').trim();
-    const phone=normPhone(r[8]);
-    const note=String(r[15]||'');
-    const carrier=String(r[17]||'').trim();
-    const trackNum=String(r[18]||'').trim();
+    const name=String(r[5]||'').trim(),phone=normPhone(r[8]);
+    const note=String(r[15]||''),carrier=String(r[17]||'').trim(),trackNum=String(r[18]||'').trim();
     if(!trackNum)continue;
     const m=note.match(/\[(\d{8,})\]/);
     if(m){const oid=m[1];if(!map.has('id_'+oid))map.set('id_'+oid,{carrier,trackNum});}
@@ -319,7 +479,9 @@ function findTrk(map,o){
   return map.get(o.name+'_'+o.phone)||map.get(o.name+'_')||null;
 }
 
-/* ============================================================ TAB 0 */
+/* ======================================================
+   TAB 0 — 발주서 생성
+====================================================== */
 var _f0=null;
 function onFile0(inp){
   _f0=inp.files[0];if(!_f0)return;
@@ -327,9 +489,7 @@ function onFile0(inp){
   readXlsx(_f0).then(wb=>{
     rawWb0=wb;
     const{platform,orders}=parseDelivery(wb,_f0.name);
-    orders0=orders;
-    renderPreview0();
-    show('preview0');
+    orders0=orders;renderPreview0();show('preview0');
     toast('✅ '+orders.length+'건 파싱 완료 ('+platform+')');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
@@ -340,8 +500,7 @@ function renderPreview0(){
   document.getElementById('b02kg').textContent=c2;
   document.getElementById('b03kg').textContent=c3;
   document.getElementById('b05kg').textContent=c5;
-  const tbody=document.getElementById('tbody0');
-  tbody.innerHTML='';
+  const tbody=document.getElementById('tbody0');tbody.innerHTML='';
   orders0.forEach((o,i)=>{
     const a=o.addr.length>28?o.addr.slice(0,28)+'…':o.addr;
     const m=o.msg.length>22?o.msg.slice(0,22)+'…':o.msg;
@@ -349,9 +508,8 @@ function renderPreview0(){
     tr.innerHTML=`<td><button class="del-btn" onclick="delRow0(${i})" title="제외">✕</button></td>
       <td>${i+1}</td><td>${esc(o.name)}</td><td>${fmtPhone(o.phone)}</td>
       <td>${esc(o.option)}</td><td>${o.qty}</td>
-      <td title="${esc(o.addr)}">${esc(a)}</td>
-      <td title="${esc(o.msg)}">${esc(m)}</td>
-      <td style="font-size:11px;color:#aaa">${o.orderId}</td>`;
+      <td title="${esc(o.addr)}">${esc(a)}</td><td title="${esc(o.msg)}">${esc(m)}</td>
+      <td style="font-size:11px;color:#bbb">${o.orderId}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -364,9 +522,8 @@ function downloadBaljoo(){
   const aoa=[HDR];
   orders0.forEach(o=>{
     const sz=extractSize(o.option)||'2kg';
-    const qa=o.qty,qb=0,qc=0;
     aoa.push([SENDER.name,SENDER.zip,SENDER.addr,SENDER.phone,'',
-      o.name,o.zip,o.addr,o.phone,'',qa,qb,qc,3,
+      o.name,o.zip,o.addr,o.phone,'',o.qty,0,0,3,
       `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${sz} ${o.qty}개)`,
       `[${o.orderId}] ${o.msg}`,4500]);
   });
@@ -378,39 +535,35 @@ function downloadBaljoo(){
   toast('✅ 발주서 다운로드 완료!');
 }
 
-/* ============================================================ TAB 1 */
+/* ======================================================
+   TAB 1 — 송장 처리
+====================================================== */
 var _f1a=null,_f1b=null;
 function refreshTab1UI(){
-  const hasOrders=orders0.length>0&&rawWb0;
-  if(hasOrders){show('t1OrdOk');hide('t1OrdUpload');document.getElementById('t1step').textContent='1';}
+  const hasO=orders0.length>0&&rawWb0;
+  if(hasO){show('t1OrdOk');hide('t1OrdUpload');document.getElementById('t1step').textContent='1';}
   else{hide('t1OrdOk');show('t1OrdUpload');document.getElementById('t1step').textContent='2';}
-  document.getElementById('btnTracking').disabled=hasOrders?!_f1b:!(_f1a&&_f1b);
+  document.getElementById('btnTracking').disabled=hasO?!_f1b:!(_f1a&&_f1b);
 }
 function onFile1a(inp){_f1a=inp.files[0];if(_f1a)setLabel('drop1a','fname1a',_f1a.name);refreshTab1UI();}
 function onFile1b(inp){_f1b=inp.files[0];if(_f1b)setLabel('drop1b','fname1b',_f1b.name);refreshTab1UI();}
 function runTracking(){
   if(!_f1b)return;
-  const hasOrders=orders0.length>0&&rawWb0;
-  const p1=hasOrders?Promise.resolve(rawWb0):readXlsx(_f1a);
+  const hasO=orders0.length>0&&rawWb0;
+  const p1=hasO?Promise.resolve(rawWb0):readXlsx(_f1a);
   Promise.all([p1,readXlsx(_f1b)]).then(([ordWb,trkWb])=>{
     rawWb1=ordWb;
     let src=orders0;
-    if(!hasOrders){const pd=parseDelivery(ordWb,_f1a?_f1a.name:'');src=pd.orders;}
+    if(!hasO){const pd=parseDelivery(ordWb,_f1a?_f1a.name:'');src=pd.orders;}
     const trkMap=parseTrk(trkWb);
     let matched=0;const miss=[];
-    orders1=src.map(o=>{
-      const trk=findTrk(trkMap,o);
-      if(trk)matched++;else miss.push(o.name);
-      return{...o,trk};
-    });
+    orders1=src.map(o=>{const trk=findTrk(trkMap,o);if(trk)matched++;else miss.push(o.name);return{...o,trk};});
     document.getElementById('t1total').textContent=src.length;
     document.getElementById('t1matched').textContent=matched;
     document.getElementById('t1miss').textContent=src.length-matched;
-    const tbody=document.getElementById('tbody1');
-    tbody.innerHTML='';
+    const tbody=document.getElementById('tbody1');tbody.innerHTML='';
     orders1.forEach((o,i)=>{
-      const ok=!!o.trk;
-      const tr=document.createElement('tr');
+      const ok=!!o.trk;const tr=document.createElement('tr');
       tr.innerHTML=`<td>${i+1}</td><td>${esc(o.name)}</td><td>${esc(o.option)}</td><td>${o.qty}</td>
         <td><span class="badge ${ok?'badge-ok':'badge-miss'}">${ok?'✅ 매칭':'❌ 미매칭'}</span></td>
         <td>${o.trk?esc(o.trk.carrier):'-'}</td><td>${o.trk?o.trk.trackNum:'-'}</td>`;
@@ -418,8 +571,7 @@ function runTracking(){
     });
     const me=document.getElementById('missAlert1');
     if(miss.length>0){me.textContent='⚠️ 미매칭 '+miss.length+'건: '+miss.join(', ');show('missAlert1');}else hide('missAlert1');
-    show('result1');
-    toast('✅ '+matched+'/'+src.length+'건 매칭 완료');
+    show('result1');toast('✅ '+matched+'/'+src.length+'건 매칭 완료');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
 function downloadCoupangUpload(){
@@ -427,69 +579,128 @@ function downloadCoupangUpload(){
   const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
   const out=[rows[0]];
-  orders1.forEach(o=>{
-    if(!o.trk)return;
-    const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=o.trk.trackNum;out.push(row);
-  });
+  orders1.forEach(o=>{if(!o.trk)return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=o.trk.trackNum;out.push(row);});
   const wb=XLSX.utils.book_new();
-  const outWs=XLSX.utils.aoa_to_sheet(out);
-  XLSX.utils.book_append_sheet(wb,outWs,'쿠팡송장업로드');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'쿠팡송장업로드');
   XLSX.writeFile(wb,'쿠팡송장업로드_'+todayYMD().replace(/-/g,'')+'.xlsx');
   toast('✅ 쿠팡 대량업로드 파일 다운로드!');
 }
 
-/* ============================================================ TAB 2: 정산 */
-function loadS(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
-function saveS(d){localStorage.setItem(SK,JSON.stringify(d));}
-
+/* ======================================================
+   TAB 2 — 정산 현황
+====================================================== */
 function addToSettlement(){
   if(!orders1.length)return;
-  const data=loadS();
-  const ids=new Set(data.map(r=>r.orderId));
-  const platform=orders1[0]?.platform||'쿠팡';
-  const feeR=FEE_RT[platform]||0.108;
+  const data=loadS();const ids=new Set(data.map(r=>r.orderId));
+  const platform=orders1[0]?.platform||'쿠팡';const feeR=FEE_RT[platform]||0.108;
   let added=0;
   orders1.forEach(o=>{
     if(!o.trk||ids.has(o.orderId))return;
-    const sz=extractSize(o.option);
-    const cost=(SUPPLY[sz]||0)*o.qty;
-    const fee=Math.round(o.payment*feeR);
-    const profit=o.payment-cost-fee;
+    const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
+    const fee=Math.round(o.payment*feeR);const profit=o.payment-cost-fee;
     const margin=o.payment>0?profit/o.payment*100:0;
     data.push({orderId:o.orderId,date:o.orderDate||todayYMD(),name:o.name,
-      platform:o.platform,option:o.option,qty:o.qty,
-      salePrice:o.payment,costPrice:cost,commission:fee,
-      profit,margin:parseFloat(margin.toFixed(1)),
+      platform:o.platform,option:o.option,qty:o.qty,salePrice:o.payment,
+      costPrice:cost,commission:fee,profit,margin:parseFloat(margin.toFixed(1)),
       trackNum:o.trk.trackNum,carrier:o.trk.carrier});
     added++;
   });
   saveS(data);
-  toast('✅ '+added+'건 정산에 추가됨'+(added===0?' (이미 모두 추가됨)':''));
+  toast('✅ '+added+'건 정산에 추가됨'+(added===0?' (모두 이미 추가됨)':''));
   if(added>0){switchTab(2);}
 }
 
-function renderSettle(){
-  const data=loadS();
-  if(!data.length){show('s2empty');hide('s2main');return;}
-  hide('s2empty');show('s2main');
-  let tSales=0,tCost=0,tFee=0,tProfit=0;
-  data.forEach(r=>{tSales+=r.salePrice;tCost+=r.costPrice;tFee+=r.commission;tProfit+=r.profit;});
-  const tM=tSales>0?tProfit/tSales*100:0;
-  document.getElementById('s2count').textContent=data.length;
-  document.getElementById('s2sales').textContent=comma(tSales)+'원';
-  document.getElementById('s2sonang').textContent=comma(tCost)+'원';
-  document.getElementById('s2fee').textContent=comma(tFee)+'원';
-  document.getElementById('s2profit').textContent=comma(tProfit)+'원';
-  document.getElementById('s2margin').textContent=tM.toFixed(1)+'%';
-  renderSettleRows(data);
+/* ---- 이전 주문 파일에서 추가 ---- */
+function toggleHistSection(){
+  const s=document.getElementById('histSection');
+  s.classList.toggle('hidden');
 }
-function renderSettleRows(data){
-  const tbody=document.getElementById('tbodySettle');
-  tbody.innerHTML='';
-  data.forEach((r,i)=>{
+function onFileHist(inp){
+  const f=inp.files[0];if(!f)return;
+  setLabel('dropHist','fnameHist',f.name);
+  readXlsx(f).then(wb=>{
+    const{platform,orders}=parseDelivery(wb,f.name);
+    const data=loadS();const ids=new Set(data.map(r=>r.orderId));
+    const feeR=FEE_RT[platform]||0.108;let added=0;
+    orders.forEach(o=>{
+      if(ids.has(o.orderId))return;
+      const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
+      const fee=Math.round(o.payment*feeR);const profit=o.payment-cost-fee;
+      const margin=o.payment>0?profit/o.payment*100:0;
+      data.push({orderId:o.orderId,date:o.orderDate||todayYMD(),name:o.name,
+        platform:o.platform,option:o.option,qty:o.qty,salePrice:o.payment,
+        costPrice:cost,commission:fee,profit,margin:parseFloat(margin.toFixed(1)),
+        trackNum:'',carrier:''});
+      added++;
+    });
+    saveS(data);renderSettle();
+    toast('✅ '+added+'건 정산 추가됨 (송장번호 없음, 나중에 수정 가능)');
+    document.getElementById('histSection').classList.add('hidden');
+  }).catch(e=>{toast('❌ 오류: '+e.message);});
+}
+
+/* ---- 필터 ---- */
+function getFilteredData(){
+  const name=(document.getElementById('fName')?.value||'').toLowerCase();
+  const ch=document.getElementById('fChannel')?.value||'';
+  const opt=document.getElementById('fOption')?.value||'';
+  const from=document.getElementById('fFrom')?.value||'';
+  const to=document.getElementById('fTo')?.value||'';
+  const all=loadS();
+  return all.filter(r=>{
+    if(name&&!r.name.toLowerCase().includes(name))return false;
+    if(ch&&r.platform!==ch)return false;
+    if(opt&&!String(r.option||'').includes(opt.replace('kg','')))return false;
+    if(from&&r.date<from)return false;
+    if(to&&r.date>to)return false;
+    return true;
+  });
+}
+function applyFilter(){renderSettle();}
+function clearFilter(){
+  ['fName','fFrom','fTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fChannel','fOption'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderSettle();
+}
+
+/* ---- 렌더 ---- */
+function renderSettle(){
+  const all=loadS();
+  const filtered=getFilteredData();
+  const isFiltered=(filtered.length!==all.length);
+
+  // filter tag
+  if(isFiltered){show('filterTag');document.getElementById('filterCount').textContent=filtered.length+'/'+all.length+'건 표시';}
+  else{hide('filterTag');document.getElementById('filterCount').textContent=all.length+'건';}
+
+  // summary (based on filtered)
+  let tS=0,tC=0,tF=0,tP=0,c2=0,c3=0,c5=0;
+  filtered.forEach(r=>{
+    tS+=r.salePrice;tC+=r.costPrice;tF+=r.commission;tP+=r.profit;
+    const sz=extractSize(r.option);
+    if(sz==='2kg')c2+=r.qty;else if(sz==='3kg')c3+=r.qty;else if(sz==='5kg')c5+=r.qty;
+  });
+  const tM=tS>0?tP/tS*100:0;
+  document.getElementById('s2count').textContent=filtered.length;
+  document.getElementById('s2sales').textContent=comma(tS)+'원';
+  document.getElementById('s2sonang').textContent=comma(tC)+'원';
+  document.getElementById('s2fee').textContent=comma(tF)+'원';
+  document.getElementById('s2profit').textContent=comma(tP)+'원';
+  document.getElementById('s2margin').textContent=tM.toFixed(1)+'%';
+  document.getElementById('s2_2kg').textContent=c2+'개';
+  document.getElementById('s2_3kg').textContent=c3+'개';
+  document.getElementById('s2_5kg').textContent=c5+'개';
+
+  // table
+  const tbody=document.getElementById('tbodySettle');tbody.innerHTML='';
+  if(!filtered.length){
+    show('emptyMsg');return;
+  }
+  hide('emptyMsg');
+  filtered.forEach((r,i)=>{
     const pc=r.profit>=0?'profit-positive':'profit-negative';
     const tr=document.createElement('tr');
-    tr.id='sr_'+i;
+    tr.id='sr_'+r.orderId;
     tr.innerHTML=`<td>${i+1}</td><td>${esc(r.date||'')}</td><td>${esc(r.name)}</td>
       <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
       <td>${esc(r.option)}</td><td>${r.qty}</td>
@@ -497,59 +708,64 @@ function renderSettleRows(data){
       <td class="${pc}">${comma(r.profit)}원</td><td>${Number(r.margin).toFixed(1)}%</td>
       <td style="font-size:11px">${esc(r.trackNum||'')}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-outline btn-sm" onclick="editSettle(${i})">✏️ 수정</button>
-        <button class="btn btn-danger btn-sm" onclick="delSettle(${i})" style="margin-left:4px">🗑️</button>
+        <button class="btn btn-outline btn-sm" onclick="editSettle('${r.orderId}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="delSettle('${r.orderId}')" style="margin-left:3px">🗑️</button>
       </td>`;
     tbody.appendChild(tr);
   });
 }
-function editSettle(i){
-  const data=loadS();const r=data[i];
-  const tr=document.getElementById('sr_'+i);
+
+/* ---- 편집 ---- */
+function editSettle(oid){
+  const data=loadS();const r=data.find(x=>x.orderId===oid);if(!r)return;
+  const tr=document.getElementById('sr_'+oid);if(!tr)return;
   tr.classList.add('editing');
-  tr.innerHTML=`<td>${i+1}</td>
-    <td><input class="edit-input" id="ei_date" value="${esc(r.date||'')}" style="width:98px"></td>
+  tr.innerHTML=`<td>✏️</td>
+    <td><input class="edit-input" id="ei_date" value="${esc(r.date||'')}" style="width:100px"></td>
     <td><input class="edit-input" id="ei_name" value="${esc(r.name)}"></td>
     <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
     <td><input class="edit-input" id="ei_opt" value="${esc(r.option)}" style="width:65px"></td>
-    <td><input class="edit-input" id="ei_qty" value="${r.qty}" type="number" style="width:45px"></td>
-    <td><input class="edit-input" id="ei_sale" value="${r.salePrice}" type="number" style="width:75px"></td>
-    <td><input class="edit-input" id="ei_cost" value="${r.costPrice}" type="number" style="width:75px"></td>
-    <td><input class="edit-input" id="ei_fee" value="${r.commission}" type="number" style="width:75px"></td>
-    <td colspan="2" style="color:#aaa;font-size:11px">저장시 자동계산</td>
+    <td><input class="edit-input" id="ei_qty" value="${r.qty}" type="number" style="width:44px"></td>
+    <td><input class="edit-input" id="ei_sale" value="${r.salePrice}" type="number" style="width:72px"></td>
+    <td><input class="edit-input" id="ei_cost" value="${r.costPrice}" type="number" style="width:72px"></td>
+    <td><input class="edit-input" id="ei_fee" value="${r.commission}" type="number" style="width:72px"></td>
+    <td colspan="2" style="color:#aaa;font-size:11px;text-align:center">저장시 자동계산</td>
     <td><input class="edit-input" id="ei_trk" value="${esc(r.trackNum||'')}"></td>
     <td style="white-space:nowrap">
-      <button class="btn btn-success btn-sm" onclick="confirmEdit(${i})">✅ 확인</button>
-      <button class="btn btn-outline btn-sm" onclick="renderSettle()" style="margin-left:4px">취소</button>
+      <button class="btn btn-success btn-sm" onclick="confirmEdit('${oid}')">✅ 확인</button>
+      <button class="btn btn-outline btn-sm" onclick="renderSettle()" style="margin-left:3px">취소</button>
     </td>`;
 }
-function confirmEdit(i){
-  const data=loadS();const r=data[i];
+function confirmEdit(oid){
+  const data=loadS();const idx=data.findIndex(x=>x.orderId===oid);if(idx<0)return;
+  const r=data[idx];
   const g=id=>document.getElementById('ei_'+id);
   const sale=Number(g('sale').value)||r.salePrice;
   const cost=Number(g('cost').value)||r.costPrice;
   const fee=Number(g('fee').value)||r.commission;
   const profit=sale-cost-fee;
   const margin=sale>0?profit/sale*100:0;
-  data[i]={...r,date:g('date').value||r.date,name:g('name').value||r.name,
+  data[idx]={...r,date:g('date').value||r.date,name:g('name').value||r.name,
     option:g('opt').value||r.option,qty:Number(g('qty').value)||r.qty,
     salePrice:sale,costPrice:cost,commission:fee,profit,
     margin:parseFloat(margin.toFixed(1)),trackNum:g('trk').value};
   saveS(data);renderSettle();toast('✅ 수정 완료');
 }
-function delSettle(i){
+function delSettle(oid){
   if(!confirm('이 항목을 삭제하시겠습니까?'))return;
-  const data=loadS();data.splice(i,1);saveS(data);renderSettle();toast('삭제됨');
+  const data=loadS().filter(r=>r.orderId!==oid);
+  saveS(data);renderSettle();toast('삭제됨');
 }
 function clearSettlement(){
   if(!confirm('정산 데이터 전체를 삭제하시겠습니까?\n되돌릴 수 없습니다.'))return;
   localStorage.removeItem(SK);renderSettle();toast('초기화 완료');
 }
+
+/* ---- 다운로드 ---- */
 function downloadSettlement(){
-  const data=loadS();if(!data.length){toast('정산 데이터가 없습니다.');return;}
+  const data=getFilteredData();if(!data.length){toast('정산 데이터가 없습니다.');return;}
   const HDR=['#','날짜','구매자','채널','옵션','수량','판매가','매입가','수수료','순이익','마진율(%)','송장번호'];
-  const aoa=[HDR];
-  let tS=0,tC=0,tF=0,tP=0;
+  const aoa=[HDR];let tS=0,tC=0,tF=0,tP=0;
   data.forEach((r,i)=>{
     aoa.push([i+1,r.date,r.name,r.platform,r.option,r.qty,r.salePrice,r.costPrice,r.commission,r.profit,parseFloat(Number(r.margin).toFixed(1)),r.trackNum||'']);
     tS+=r.salePrice;tC+=r.costPrice;tF+=r.commission;tP+=r.profit;
@@ -561,10 +777,38 @@ function downloadSettlement(){
   ws['!cols']=[{wch:4},{wch:12},{wch:10},{wch:12},{wch:16},{wch:5},{wch:10},{wch:10},{wch:10},{wch:10},{wch:9},{wch:16}];
   XLSX.utils.book_append_sheet(wb,ws,'정산');
   XLSX.writeFile(wb,'당근_정산_'+todayYMD().replace(/-/g,'')+'.xlsx');
-  toast('✅ 정산 파일 다운로드!');
+  toast('✅ 정산 엑셀 다운로드!');
 }
 
-/* ============================================================ DRAG & DROP */
+/* ---- JSON 내보내기/가져오기 ---- */
+function exportJSON(){
+  const data=loadS();if(!data.length){toast('정산 데이터가 없습니다.');return;}
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='돌망_정산_'+todayYMD().replace(/-/g,'')+'.json';a.click();
+  toast('✅ JSON 내보내기 완료! 다른 기기에서 가져오기로 불러오세요.');
+}
+function importJSON(inp){
+  const f=inp.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(!Array.isArray(imported))throw new Error('올바른 형식이 아닙니다.');
+      const existing=loadS();const ids=new Set(existing.map(r=>r.orderId));
+      let added=0;
+      imported.forEach(r=>{if(!ids.has(r.orderId)){existing.push(r);added++;}});
+      saveS(existing);renderSettle();
+      toast('✅ '+added+'건 추가됨 (중복 제외)');
+    }catch(e){toast('❌ JSON 파일 오류: '+e.message);}
+  };
+  reader.readAsText(f);
+  inp.value='';
+}
+
+/* ======================================================
+   DRAG & DROP
+====================================================== */
 function setupDrop(aId,fId,fn){
   const a=document.getElementById(aId);if(!a)return;
   a.addEventListener('dragover',e=>{e.preventDefault();a.style.borderColor='#ff6b35';});
@@ -579,9 +823,20 @@ function setupDrop(aId,fId,fn){
 setupDrop('drop0','file0',onFile0);
 setupDrop('drop1a','file1a',onFile1a);
 setupDrop('drop1b','file1b',onFile1b);
+setupDrop('dropHist','fileHist',onFileHist);
 
-/* Init */
-renderSettle();
+/* ======================================================
+   INIT — 시드 데이터 자동 로드 (localStorage 비어있을 때만)
+====================================================== */
+(function init(){
+  const existing=loadS();
+  if(existing.length===0 && SEED.length>0){
+    // 시드 데이터 자동 삽입
+    saveS(SEED);
+    console.log('시드 데이터 '+SEED.length+'건 로드됨');
+  }
+  renderSettle();
+})();
 </script>
 </body>
 </html>
