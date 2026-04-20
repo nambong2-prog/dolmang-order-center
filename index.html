@@ -559,7 +559,7 @@ async function handleOrderFiles(files) {
 // =====================================================
 // TRACKING FILE PROCESSING
 // =====================================================
-async function handleTrackingFile(file) {
+async async function handleTrackingFile(file) {
   if(!file) return;
   try {
     const wb = await readXlsx(file);
