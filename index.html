@@ -379,9 +379,7 @@ function loadState() {
 
 let _autoSyncTimer = null;
 function saveState() {
-  // rawRow/rawHeaders/rawCol 은 localStorage 용량 절약을 위해 제외
-  const ordersLite = S.orders.map(o => { const c={...o}; delete c.rawRow; delete c.rawHeaders; delete c.rawCol; return c; });
-  localStorage.setItem('dm_orders', JSON.stringify(ordersLite));
+  localStorage.setItem('dm_orders', JSON.stringify(S.orders));
   localStorage.setItem('dm_history', JSON.stringify(S.history));
   localStorage.setItem('dm_settle', JSON.stringify(S.settlement));
   localStorage.setItem('dm_cfg', JSON.stringify(S.cfg));
@@ -546,7 +544,12 @@ async function handleOrderFiles(files) {
       const ords = parseOrderFile(wb, f.name);
       for(const o of ords) {
         if(!existing.has(o.id)){ S.orders.push(o); existing.add(o.id); added++; }
-        else dup++;
+        else {
+          // rawRow/rawHeaders/rawCol 갱신 (새로고침 후 재업로드 시 복원)
+          const ex = S.orders.find(e=>e.id===o.id);
+          if(ex){ ex.rawRow=o.rawRow; ex.rawHeaders=o.rawHeaders; ex.rawCol=o.rawCol; }
+          dup++;
+        }
       }
     } catch(e) { showToast(`❌ 파일 오류: ${f.name}`); }
   }
