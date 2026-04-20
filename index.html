@@ -393,7 +393,7 @@ function saveState() {
   }
 }
 
-function setAutoSyncIndicator(msg) {
+async function setAutoSyncIndicator(msg) {
   const el = document.getElementById('auto-sync-status');
   if(el) el.textContent = msg;
 }
@@ -470,7 +470,7 @@ async function readXlsx(file) {
   });
 }
 
-function parseOrderFile(wb, fname) {
+async function parseOrderFile(wb, fname) {
   const sn = wb.SheetNames.includes('Delivery') ? 'Delivery' : wb.SheetNames[0];
   const ws = wb.Sheets[sn];
   const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
@@ -909,7 +909,7 @@ function openSettings() {
   document.getElementById('modal-cfg').classList.remove('hidden');
 }
 
-function saveSettings() {
+async function saveSettings() {
   S.cfg.gasUrl=document.getElementById('gas-url').value.trim();
   saveState(); closeModal('modal-cfg'); showToast('✅ 설정 저장 완료');
 }
