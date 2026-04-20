@@ -320,6 +320,7 @@ const todayMMDD=()=>todayYMD().replace(/-/g,'').slice(4);
 const comma=n=>Math.round(n).toLocaleString('ko-KR');
 const fmtPhone=p=>{const d=String(p||'');if(d.length===11)return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);if(d.length===10)return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);return d;};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const normDate=d=>{if(!d)return'';const s=String(d);if(s.includes('T'))return s.slice(0,10);return s.slice(0,10);};
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 const show=id=>document.getElementById(id)?.classList.remove('hidden');
 const hide=id=>document.getElementById(id)?.classList.add('hidden');
@@ -699,7 +700,7 @@ function renderSettle(){
     const pc=r.profit>=0?'profit-positive':'profit-negative';
     const tr=document.createElement('tr');
     tr.id='sr_'+r.orderId;
-    tr.innerHTML=`<td>${i+1}</td><td>${esc(r.date||'')}</td><td>${esc(r.name)}</td>
+    tr.innerHTML=`<td>${i+1}</td><td>${esc(normDate(r.date))}</td><td>${esc(r.name)}</td>
       <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
       <td>${esc(r.option)}</td><td>${r.qty}</td>
       <td>${comma(r.salePrice)}원</td><td>${comma(r.costPrice)}원</td><td>${comma(r.commission)}원</td>
@@ -719,7 +720,7 @@ function editSettle(oid){
   const tr=document.getElementById('sr_'+oid);if(!tr)return;
   tr.classList.add('editing');
   tr.innerHTML=`<td>✏️</td>
-    <td><input class="edit-input" id="ei_date" value="${esc(r.date||'')}" style="width:100px"></td>
+    <td><input class="edit-input" id="ei_date" value="${esc(normDate(r.date))}" style="width:100px"></td>
     <td><input class="edit-input" id="ei_name" value="${esc(r.name)}"></td>
     <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
     <td><input class="edit-input" id="ei_opt" value="${esc(r.option)}" style="width:65px"></td>
@@ -833,7 +834,8 @@ setupDrop('dropHist','fileHist',onFileHist);
     const data=await res.json();
     if(data.settlement&&data.settlement.length>0){
       // 구글시트 데이터를 로컬에 저장 (auto-save 루프 방지 위해 직접 저장)
-      localStorage.setItem(SK,JSON.stringify(data.settlement));
+      const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
+      localStorage.setItem(SK,JSON.stringify(normalized));
       setSyncStatus('ok','구글시트 불러오기 완료 ('+data.settlement.length+'건)');
     }else{
       // 구글시트 비어있음 → 로컬 또는 시드 데이터 사용
