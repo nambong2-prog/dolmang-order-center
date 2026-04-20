@@ -824,14 +824,35 @@ setupDrop('drop1b','file1b',onFile1b);
 setupDrop('dropHist','fileHist',onFileHist);
 
 /* ======================================================
-   INIT — 시드 데이터 자동 로드 (localStorage 비어있을 때만)
+   INIT — 앱 열릴 때 구글시트에서 자동 불러오기
 ====================================================== */
-(function init(){
-  const existing=loadS();
-  if(existing.length===0 && SEED.length>0){
-    // 시드 데이터 자동 삽입
-    saveS(SEED);
-    console.log('시드 데이터 '+SEED.length+'건 로드됨');
+(async function init(){
+  setSyncStatus('spin','구글시트에서 불러오는 중...');
+  try{
+    const res=await fetch(GAS_URL+'?action=getAll');
+    const data=await res.json();
+    if(data.settlement&&data.settlement.length>0){
+      // 구글시트 데이터를 로컬에 저장 (auto-save 루프 방지 위해 직접 저장)
+      localStorage.setItem(SK,JSON.stringify(data.settlement));
+      setSyncStatus('ok','구글시트 불러오기 완료 ('+data.settlement.length+'건)');
+    }else{
+      // 구글시트 비어있음 → 로컬 또는 시드 데이터 사용
+      const local=loadS();
+      if(local.length===0&&SEED.length>0){
+        localStorage.setItem(SK,JSON.stringify(SEED));
+        setSyncStatus('ok','초기 데이터 로드됨 ('+SEED.length+'건)');
+      }else{
+        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)');
+      }
+    }
+  }catch(e){
+    // 구글시트 연결 실패 → 로컬 또는 시드 데이터 사용
+    const local=loadS();
+    if(local.length===0&&SEED.length>0){
+      localStorage.setItem(SK,JSON.stringify(SEED));
+    }
+    setSyncStatus('err','구글시트 연결 실패 — 로컬 데이터 사용');
+    console.warn('GAS load failed:',e);
   }
   renderSettle();
 })();
