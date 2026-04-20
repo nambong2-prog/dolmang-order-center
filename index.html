@@ -220,8 +220,6 @@ tr.editing td{background:#fffde7!important}
       <button class="btn btn-success" onclick="downloadSettlement()">⬇️ 엑셀 다운로드</button>
       <button class="btn btn-cloud" onclick="loadFromGAS()">☁️ 구글시트 불러오기</button>
       <button class="btn btn-cloud" onclick="saveToGASManual()">☁️ 구글시트 저장</button>
-      <button class="btn btn-outline" onclick="exportJSON()">📤 JSON 내보내기</button>
-      <label class="btn btn-outline" style="cursor:pointer">📥 JSON 가져오기<input type="file" accept=".json" onchange="importJSON(this)" style="display:none"></label>
       <button class="btn btn-outline" onclick="toggleHistSection()">📂 이전 주문 추가</button>
       <button class="btn btn-danger" style="margin-left:auto" onclick="clearSettlement()">🗑️ 초기화</button>
     </div>
@@ -525,7 +523,7 @@ function downloadBaljoo(){
     aoa.push([SENDER.name,SENDER.zip,SENDER.addr,SENDER.phone,'',
       o.name,o.zip,o.addr,o.phone,'',o.qty,0,0,3,
       `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${sz} ${o.qty}개)`,
-      `[${o.orderId}] ${o.msg}`,4500]);
+      o.msg,4500]);
   });
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(aoa);
