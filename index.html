@@ -3,975 +3,1006 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🥕 돌망돌망 주문관리센터</title>
+<title>돌망돌망 주문관리센터</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--pr:#FF6B35;--prl:#FFF3EE;--tx:#212121;--txl:#757575;--bd:#E0E0E0;--bg:#FAFAFA;--wh:#fff;--sh:0 1px 4px rgba(0,0,0,.1);--ra:8px;--ok:#2E7D32}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5}
-/* HEADER */
-.hd{background:var(--pr);color:#fff;padding:0 20px;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:100}
-.hd-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
-.hd-title{display:flex;align-items:center;gap:12px}
-.logo{font-size:28px}
-.hd h1{font-size:18px;font-weight:700}
-#hd-stats{font-size:12px;opacity:.9}
-/* NAV */
-.nav{background:#fff;border-bottom:1px solid var(--bd);padding:0 20px;display:flex;gap:4px;position:sticky;top:60px;z-index:99;box-shadow:0 1px 3px rgba(0,0,0,.05);overflow-x:auto}
-.nb{padding:14px 18px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:500;color:var(--txl);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
-.nb:hover{color:var(--pr);background:var(--prl)}
-.nb.active{color:var(--pr);border-bottom-color:var(--pr);font-weight:700}
-/* MAIN */
-.main{max-width:1200px;margin:0 auto;padding:20px}
-.hidden{display:none!important}
-/* SETTLEMENT FILTERS */
-.sf-ch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.sf-ch-btn{padding:7px 16px;border-radius:20px;border:2px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#666;transition:all .2s}
-.sf-ch-btn.active{background:var(--pr);border-color:var(--pr);color:#fff}
-.sf-ch-btn.cp.active{background:#1a4fd6;border-color:#1a4fd6;color:#fff}
-.sf-ch-btn.ss.active{background:#03C75A;border-color:#03C75A;color:#fff}
-.sf-ch-btn.dg.active{background:#FF7E36;border-color:#FF7E36;color:#fff}
-.sf-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:#f8f9fa;padding:12px 14px;border-radius:10px;margin-bottom:14px}
-.sf-item{display:flex;flex-direction:column;gap:4px}
-.sf-lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase}
-.sf-item input,.sf-item select{padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
-.sf-item input:focus,.sf-item select:focus{border-color:var(--pr);outline:none}
-.sf-search{flex:1;min-width:160px}
-.filter-stat-bar{background:linear-gradient(135deg,#fff9f5,#fff3ed);border:1.5px solid #ffceb4;border-radius:10px;padding:10px 16px;margin-bottom:12px;font-size:13px;color:#555}
-/* DAY GROUP */
-.day-group{margin-bottom:20px}
-.day-header{font-size:13px;font-weight:700;color:#444;padding:8px 4px 6px;border-bottom:2px solid #eee;margin-bottom:6px}
-.day-meta{font-weight:400;color:#888;margin-left:8px}
-.opt-badge{background:#f0f0f0;border-radius:5px;padding:2px 7px;font-size:12px;font-weight:600}
-.tr-cp td:first-child{border-left:3px solid #1a4fd6}
-.tr-ss td:first-child{border-left:3px solid #03C75A}
-.tr-dg td:first-child{border-left:3px solid #FF7E36}
-.track-no{font-size:11px;color:#aaa;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.muted{color:#aaa}
-/* TABLE SCROLL WRAPPER */
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;width:100%}
-/* SECTION */
-.sec{background:#fff;border-radius:var(--ra);padding:20px;margin-bottom:16px;box-shadow:var(--sh);border:1px solid var(--bd)}
-/* INFO CARD */
-.icard{background:var(--prl);border:1px solid #FFCCBC;border-radius:var(--ra);padding:16px;margin-bottom:16px}
-.icard h3{font-size:15px;margin-bottom:6px;color:var(--pr)}
-.icard p{font-size:13px;color:var(--txl)}
-/* DROP ZONE */
-.dz{border:2px dashed var(--bd);border-radius:var(--ra);padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
-.dz:hover,.dz.drag-over{border-color:var(--pr);background:var(--prl)}
-.dz-icon{font-size:36px;margin-bottom:10px}
-.dz-title{font-size:16px;font-weight:600;margin-bottom:6px}
-.dz-sub{font-size:13px;color:var(--txl);line-height:1.8}
-/* FILTER */
-.fbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.fbtn{padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px;transition:all .15s}
-.fbtn:hover{border-color:var(--pr);color:var(--pr)}
-.fbtn.active{background:var(--pr);color:#fff;border-color:var(--pr)}
-/* TABLE */
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{background:#F5F5F5;padding:10px 12px;text-align:left;font-weight:600;color:var(--txl);border-bottom:2px solid var(--bd);white-space:nowrap}
-.tbl td{padding:10px 12px;border-bottom:1px solid #F5F5F5;vertical-align:middle;white-space:nowrap}
-.tbl tr:hover td{background:#FAFAFA}
-.tbl tr.done td{opacity:.6}
-.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
-.tbl td.profit{color:#2E7D32;font-weight:600}
-/* BADGES */
-.bdg{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;background:#E0E0E0;color:#616161}
-.bdg-ok{background:#E8F5E9;color:#2E7D32}
-.bdg-warn{background:#FFF8E1;color:#F57F17}
-.bdg-gray{background:#F5F5F5;color:#9E9E9E}
-/* CHANNEL TAG */
-.chtag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
-/* BUTTONS */
-.btn{padding:10px 20px;border-radius:var(--ra);border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s}
-.btn-pr{background:var(--pr);color:#fff}.btn-pr:hover{background:#E55B25}
-.btn-ol{background:#fff;color:var(--pr);border:2px solid var(--pr)}.btn-ol:hover{background:var(--prl)}
-.btn-dg{background:#FFF9C4;color:#F57F17;border:1px solid #FFE082}.btn-dg:hover{background:#FFF3E0}
-.btn-del{background:none;border:none;cursor:pointer;color:#BDBDBD;font-size:15px;padding:2px 6px;border-radius:4px}.btn-del:hover{color:#E53935;background:#FFEBEE}
-.btn-icon{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;padding:4px 8px;border-radius:4px}.btn-icon:hover{background:rgba(255,255,255,.3)}
-.btn-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--txl);padding:4px}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-danger{background:#fff;color:#E53935;border:1px solid #FFCDD2;font-size:12px;padding:6px 12px;border-radius:var(--ra);cursor:pointer}.btn-danger:hover{background:#FFEBEE}
-.brow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-/* STATS */
-.srow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.sbox{flex:1;min-width:130px;background:#fff;border:1px solid var(--bd);border-radius:var(--ra);padding:16px;text-align:center}
-.sbox.ok{border-color:#A5D6A7;background:#F1F8E9}
-.sbox.warn{border-color:#FFCC80;background:#FFFDE7}
-.snum{font-size:22px;font-weight:700}
-.slbl{font-size:12px;color:var(--txl);margin-top:4px}
-/* MODAL */
-.mover{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
-.modal{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.mhd{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.mhd h3{font-size:17px;font-weight:700}
-/* FORM */
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg.full{grid-column:span 2}
-.fg label{font-size:12px;font-weight:600;color:var(--txl)}
-.fg input,.fg select{padding:10px 12px;border:1px solid var(--bd);border-radius:var(--ra);font-size:14px;transition:border-color .15s}
-.fg input:focus,.fg select:focus{outline:none;border-color:var(--pr);box-shadow:0 0 0 3px rgba(255,107,53,.1)}
-/* MISC */
-.empty{padding:40px;text-align:center;color:var(--txl);font-size:15px}
-.hint{font-size:12px;color:var(--txl);margin-top:8px}
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#212121;color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:500;z-index:300;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
-#toast.show{transform:translateX(-50%) translateY(0)}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; background: #f5f5f5; color: #333; }
 
-/* ═══════════════════════════
-   MOBILE (≤768px)
-═══════════════════════════ */
-@media(max-width:768px){
-  /* Header */
-  .hd{padding:0 12px}
-  .hd-in{height:52px}
-  .logo{font-size:22px}
-  .hd h1{font-size:15px}
-  #hd-stats{display:none}
-  /* Nav → 하단 고정 탭바 */
-  .nav{position:fixed;bottom:0;top:auto;left:0;right:0;z-index:200;padding:0;border-top:1px solid var(--bd);border-bottom:none;box-shadow:0 -2px 8px rgba(0,0,0,.08);justify-content:stretch}
-  .nb{flex:1;padding:10px 4px 8px;font-size:11px;font-weight:600;text-align:center;border-bottom:none;border-top:3px solid transparent;white-space:normal;line-height:1.3}
-  .nb.active{border-bottom:none;border-top-color:var(--pr)}
-  /* Main — 하단 탭바 여백 */
-  .main{padding:12px 10px 80px;max-width:100%}
-  /* Section */
-  .sec{padding:12px 10px}
-  /* Stats — 2×2 그리드 */
-  .srow{gap:8px}
-  .sbox{min-width:calc(50% - 4px);flex:0 0 calc(50% - 4px);padding:12px 8px}
-  .snum{font-size:18px}
-  /* Drop zone */
-  .dz{padding:24px 14px}
-  .dz-icon{font-size:28px}
-  .dz-title{font-size:14px}
-  /* Buttons */
-  .brow{flex-direction:column}
-  .brow .btn,.brow .btn-danger,.brow .btn-ol{width:100%;text-align:center}
-  /* Filter bar */
-  .sf-bar{flex-direction:column;gap:8px;padding:10px}
-  .sf-item{width:100%}
-  /* iOS 입력 확대 방지 */
-  .sf-item input,.sf-item select,.fg input,.fg select{font-size:16px}
-  /* Modal → 바텀시트 */
-  .mover{padding:0;align-items:flex-end}
-  .modal{border-radius:16px 16px 0 0;max-width:100%;max-height:92vh;padding:20px 14px 28px}
-  /* Form */
-  .fgrid{grid-template-columns:1fr}
-  .fg.full{grid-column:span 1}
-  /* Toast */
-  #toast{bottom:76px}
+header {
+  background: #ff6b35;
+  color: white;
+  padding: 16px 24px;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-@media(max-width:380px){
-  .nb{font-size:10px}
-  .hd h1{font-size:13px}
+header span { font-size: 14px; opacity: 0.85; font-weight: 400; margin-left: 8px; }
+
+.tab-bar {
+  background: white;
+  display: flex;
+  border-bottom: 2px solid #eee;
+  padding: 0 16px;
 }
+.tab-btn {
+  padding: 14px 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  color: #888;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.tab-btn.active { color: #ff6b35; border-bottom-color: #ff6b35; }
+.tab-btn:hover { color: #ff6b35; }
+
+.tab-content { display: none; padding: 24px; max-width: 960px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #222;
+}
+.card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.file-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+  position: relative;
+  min-height: 100px;
+}
+.file-area:hover { border-color: #ff6b35; background: #fff5f0; }
+.file-area.has-file { border-color: #4caf50; background: #f0fff0; }
+.file-area input[type=file] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; z-index: 2;
+}
+.file-area .icon { font-size: 28px; margin-bottom: 6px; }
+.file-area .label { font-size: 13px; color: #666; line-height: 1.5; }
+.file-area .filename { font-size: 13px; color: #4caf50; font-weight: 600; margin-top: 6px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-primary { background: #ff6b35; color: white; }
+.btn-primary:hover { background: #e55a25; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.btn-success { background: #4caf50; color: white; }
+.btn-success:hover { background: #388e3c; }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.summary-box {
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.summary-box .val { font-size: 20px; font-weight: 700; color: #ff6b35; }
+.summary-box .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: #f5f5f5;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-cp { background: #fff0e0; color: #e67e00; }
+.badge-ss { background: #e0f0ff; color: #0066cc; }
+.badge-ok { background: #e0ffe0; color: #1a8a1a; }
+.badge-miss { background: #ffe0e0; color: #cc0000; }
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.alert-info { background: #e8f4fd; color: #1a6fa8; border-left: 4px solid #2196f3; }
+.alert-warn { background: #fff8e1; color: #8a6000; border-left: 4px solid #ffc107; }
+.alert-success { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #4caf50; }
+
+.hidden { display: none; }
+
+.profit-positive { color: #1a8a1a; font-weight: 700; }
+.profit-negative { color: #cc0000; font-weight: 700; }
+
+.divider { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+.tbl-wrap { overflow-x: auto; margin-top: 16px; }
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6b35;
+  color: white;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #333; color: white;
+  padding: 12px 20px; border-radius: 8px;
+  font-size: 14px; z-index: 9999;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<header class="hd">
-  <div class="hd-in">
-    <div class="hd-title">
-      <span class="logo">🥕</span>
-      <div>
-        <h1>돌망돌망 주문관리센터</h1>
-        <p id="hd-stats">로딩 중...</p>
-      </div>
-    </div>
-    <button class="btn-icon" onclick="openSettings()">⚙️</button>
-  </div>
+<header>
+  🥕 돌망돌망 주문관리센터
+  <span>소낭친환경 유기농 당근</span>
 </header>
 
-<nav class="nav">
-  <button class="nb active" onclick="switchTab('orders',this)">📦 주문현황</button>
-  <button class="nb" onclick="switchTab('baljoo',this)">📋 발주서 생성</button>
-  <button class="nb" onclick="switchTab('tracking',this)">🚚 송장 처리</button>
-  <button class="nb" onclick="switchTab('settlement',this)">💰 정산현황</button>
-</nav>
-
-<main class="main">
-
-<!-- 탭1: 주문현황 -->
-<div id="tab-orders">
-  <div class="sec">
-    <div class="dz" id="dz-orders" onclick="document.getElementById('fi-orders').click()">
-      <div class="dz-icon">📂</div>
-      <p class="dz-title">쿠팡 / 스마트스토어 주문 파일 업로드</p>
-      <p class="dz-sub">DeliveryList*.xlsx 또는 *스마트스토어*.xlsx<br>여러 파일 동시 드래그&amp;드롭 가능</p>
-      <input type="file" id="fi-orders" multiple accept=".xlsx" onchange="handleOrderFiles(this.files)" style="display:none">
-    </div>
-    <button class="btn btn-dg" onclick="openManualEntry()">🥕 당근마켓 주문 직접 입력</button>
-  </div>
-  <div class="sec">
-    <div class="fbar" id="fbar">
-      <button class="fbtn active" onclick="filterOrders('all',this)">전체 <span id="cnt-all" class="bdg">0</span></button>
-      <button class="fbtn" onclick="filterOrders('쿠팡',this)">쿠팡 <span id="cnt-cp" class="bdg" style="background:#E8F5E9;color:#2E7D32">0</span></button>
-      <button class="fbtn" onclick="filterOrders('스마트스토어',this)">스마트스토어 <span id="cnt-ss" class="bdg" style="background:#E3F2FD;color:#1565C0">0</span></button>
-      <button class="fbtn" onclick="filterOrders('당근마켓',this)">당근마켓 <span id="cnt-dg" class="bdg" style="background:#FFF9C4;color:#F57F17">0</span></button>
-      <button class="fbtn" onclick="filterOrders('pending',this)">처리대기 <span id="cnt-pending" class="bdg bdg-warn">0</span></button>
-      <button class="btn-danger btn-sm" onclick="clearOrders()" style="margin-left:auto">🗑️ 목록 초기화</button>
-    </div>
-    <div id="orders-wrap"></div>
-  </div>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab(0)">📦 발주서 생성</button>
+  <button class="tab-btn" onclick="switchTab(1)">🚚 송장 처리</button>
+  <button class="tab-btn" onclick="switchTab(2)">💰 정산</button>
 </div>
 
-<!-- 탭2: 발주서 생성 -->
-<div id="tab-baljoo" class="hidden">
-  <div class="sec">
-    <div class="icard">
-      <h3>📋 발주서 생성</h3>
-      <p>처리이력에 없는 <strong>신규 주문만</strong> 추출해서 소낭친환경에 보낼 발주서를 생성합니다.</p>
+<!-- ===== TAB 0: 발주서 생성 ===== -->
+<div id="tab0" class="tab-content active">
+  <div class="card">
+    <h2>📦 발주서 생성</h2>
+    <div class="alert alert-info">
+      쿠팡 DeliveryList 또는 스마트스토어 발주 파일을 업로드하면 소낭친환경 발주서(.xlsx) 형식으로 변환합니다.
     </div>
-    <div id="baljoo-stats"></div>
-    <div id="baljoo-preview"></div>
-    <div class="brow">
-      <button class="btn btn-pr" onclick="downloadBaljoo(false)">📥 발주서 생성 (신규 주문)</button>
-      <button class="btn btn-ol" onclick="downloadBaljoo(true)">📥 합산 발주서 (이력 무시 · 전체)</button>
+
+    <h3><span class="step-num">1</span> 주문 파일 업로드</h3>
+    <div class="file-area" id="drop0">
+      <input type="file" id="file0" accept=".xlsx,.xls" onchange="onFile0(this)">
+      <div class="icon">📂</div>
+      <div class="label">쿠팡 DeliveryList 또는 스마트스토어 발주파일<br>클릭하거나 파일을 드래그하세요</div>
+      <div class="filename" id="fname0"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="runBaljoo()" id="btnBaljoo" disabled>📋 발주서 생성</button>
     </div>
   </div>
-</div>
 
-<!-- 탭3: 송장 처리 -->
-<div id="tab-tracking" class="hidden">
-  <div class="sec">
-    <div class="icard">
-      <h3>🚚 송장 처리</h3>
-      <p>소낭친환경에서 받은 <strong>*송장번호*.xlsx</strong> 업로드<br>→ 자동 매칭 후 <strong>쿠팡 업로드 파일</strong>과 <strong>스마트스토어 업로드 파일</strong>을 생성합니다.</p>
-    </div>
-    <div class="dz" id="dz-tracking" onclick="document.getElementById('fi-tracking').click()">
-      <div class="dz-icon">📬</div>
-      <p class="dz-title">송장번호 파일 업로드</p>
-      <p class="dz-sub">소낭친환경에서 받은 *송장번호*.xlsx</p>
-      <input type="file" id="fi-tracking" accept=".xlsx" onchange="handleTrackingFile(this.files[0])" style="display:none">
-    </div>
-    <div id="tracking-result"></div>
-  </div>
-</div>
-
-<!-- 탭4: 정산현황 -->
-<div id="tab-settlement" class="hidden">
-  <div id="settle-summary"></div>
-  <div class="sec">
-    <!-- 채널 탭 필터 -->
-    <div class="sf-ch" id="sf-ch-wrap">
-      <button class="sf-ch-btn active" data-ch="전체" onclick="setSettleChannel(this)">전체</button>
-      <button class="sf-ch-btn cp" data-ch="쿠팡" onclick="setSettleChannel(this)">🛒 쿠팡</button>
-      <button class="sf-ch-btn ss" data-ch="스마트스토어" onclick="setSettleChannel(this)">🟢 스마트스토어</button>
-      <button class="sf-ch-btn dg" data-ch="당근마켓" onclick="setSettleChannel(this)">🥕 당근마켓</button>
-    </div>
-    <!-- 상세 필터 -->
-    <div class="sf-bar">
-      <div class="sf-item">
-        <label class="sf-lbl">옵션</label>
-        <select id="sf-opt" onchange="renderSettlement()">
-          <option value="">전체</option>
-          <option value="2kg">2kg</option>
-          <option value="3kg">3kg</option>
-          <option value="5kg">5kg</option>
-        </select>
+  <div id="result0" class="hidden">
+    <div class="card">
+      <h2>✅ 변환 결과</h2>
+      <div class="summary-grid">
+        <div class="summary-box"><div class="val" id="b0total">0</div><div class="lbl">총 주문 건</div></div>
+        <div class="summary-box"><div class="val" id="b0plat">-</div><div class="lbl">채널</div></div>
+        <div class="summary-box"><div class="val" id="b02kg">0</div><div class="lbl">2kg 수량합</div></div>
+        <div class="summary-box"><div class="val" id="b03kg">0</div><div class="lbl">3kg 수량합</div></div>
+        <div class="summary-box"><div class="val" id="b05kg">0</div><div class="lbl">5kg 수량합</div></div>
       </div>
-      <div class="sf-item">
-        <label class="sf-lbl">주문일 시작</label>
-        <input type="date" id="sf-date-from" onchange="renderSettlement()">
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="downloadBaljoo()">⬇️ 발주서 다운로드</button>
       </div>
-      <div class="sf-item">
-        <label class="sf-lbl">주문일 종료</label>
-        <input type="date" id="sf-date-to" onchange="renderSettlement()">
+      <div class="divider"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>받는사람</th><th>전화번호</th><th>옵션</th><th>수량</th><th>주소</th><th>배송메세지</th></tr>
+          </thead>
+          <tbody id="tbody0"></tbody>
+        </table>
       </div>
-      <div class="sf-item sf-search">
-        <label class="sf-lbl">수취인 검색</label>
-        <input type="text" id="sf-name" placeholder="이름 입력..." oninput="renderSettlement()">
-      </div>
-      <button class="btn-sm btn-ol" onclick="resetSettleFilter()" style="align-self:flex-end">초기화</button>
-    </div>
-    <!-- 필터 결과 통계 -->
-    <div id="settle-filter-stats"></div>
-    <div id="settle-table"></div>
-    <div class="brow">
-      <button class="btn btn-ol" onclick="exportSettlement()">📥 정산 엑셀 다운로드</button>
-      <button class="btn-danger btn-sm" onclick="clearSettlement()">🗑️ 정산 초기화</button>
     </div>
   </div>
 </div>
 
-</main>
+<!-- ===== TAB 1: 송장 처리 ===== -->
+<div id="tab1" class="tab-content">
+  <div class="card">
+    <h2>🚚 송장 처리</h2>
+    <div class="alert alert-info">
+      ① 원본 쿠팡/SS 주문파일 + ② 소낭에서 받은 송장번호 포함 발주서를 업로드하면<br>
+      쿠팡 또는 스마트스토어 업로드용 파일을 생성합니다.
+    </div>
 
-<!-- 당근마켓 입력 모달 -->
-<div id="modal-dg" class="mover hidden" onclick="if(event.target===this)closeModal('modal-dg')">
-  <div class="modal">
-    <div class="mhd"><h3>🥕 당근마켓 주문 입력</h3><button class="btn-close" onclick="closeModal('modal-dg')">✕</button></div>
-    <form id="form-dg" onsubmit="submitManualOrder(event)">
-      <div class="fgrid">
-        <div class="fg"><label>받는 분 *</label><input name="name" required placeholder="홍길동"></div>
-        <div class="fg"><label>전화번호 *</label><input name="phone" required placeholder="01012345678"></div>
-        <div class="fg"><label>옵션 *</label>
-          <select name="option" required>
-            <option value="">선택하세요</option>
-            <option value="2kg">흙당근 2kg</option>
-            <option value="3kg">흙당근 3kg</option>
-            <option value="5kg">흙당근 5kg</option>
-          </select>
+    <div class="two-col">
+      <div>
+        <h3><span class="step-num">1</span> 원본 주문파일 (쿠팡/SS)</h3>
+        <div class="file-area" id="drop1a">
+          <input type="file" id="file1a" accept=".xlsx,.xls" onchange="onFile1a(this)">
+          <div class="icon">📂</div>
+          <div class="label">DeliveryList 또는<br>스마트스토어 발주파일</div>
+          <div class="filename" id="fname1a"></div>
         </div>
-        <div class="fg"><label>판매가 (비워두면 자동)</label><input type="number" name="salePrice" placeholder="자동계산"></div>
-        <div class="fg"><label>우편번호</label><input name="zipcode" placeholder="12345"></div>
-        <div class="fg"><label>주문일 *</label><input type="date" name="orderDate" required></div>
-        <div class="fg full"><label>주소 *</label><input name="address" required placeholder="제주시 ..."></div>
-        <div class="fg full"><label>배송메세지</label><input name="deliveryMsg" placeholder="문 앞에 놓아주세요"></div>
       </div>
-      <div class="brow">
-        <button type="submit" class="btn btn-pr">추가하기</button>
-        <button type="button" class="btn btn-ol" onclick="closeModal('modal-dg')">취소</button>
+      <div>
+        <h3><span class="step-num">2</span> 소낭 발주서 (송장번호 포함)</h3>
+        <div class="file-area" id="drop1b">
+          <input type="file" id="file1b" accept=".xlsx,.xls" onchange="onFile1b(this)">
+          <div class="icon">📬</div>
+          <div class="label">소낭친환경에서 받은<br>송장번호 포함 발주서</div>
+          <div class="filename" id="fname1b"></div>
+        </div>
       </div>
-    </form>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="runTracking()" id="btnTracking" disabled>🚚 송장 매칭 처리</button>
+    </div>
+  </div>
+
+  <div id="result1" class="hidden">
+    <div class="card">
+      <h2>✅ 매칭 결과</h2>
+      <div class="summary-grid">
+        <div class="summary-box"><div class="val" id="t1total">0</div><div class="lbl">전체 주문</div></div>
+        <div class="summary-box"><div class="val" id="t1matched">0</div><div class="lbl">매칭 성공</div></div>
+        <div class="summary-box"><div class="val" id="t1miss">0</div><div class="lbl">미매칭</div></div>
+      </div>
+      <div class="btn-row" id="dlBtns1"></div>
+      <div id="missAlert1" class="hidden alert alert-warn" style="margin-top:12px"></div>
+      <div class="divider"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>받는사람</th><th>옵션</th><th>수량</th><th>매칭</th><th>택배사</th><th>운송장번호</th></tr>
+          </thead>
+          <tbody id="tbody1"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- 설정 모달 -->
-<div id="modal-cfg" class="mover hidden" onclick="if(event.target===this)closeModal('modal-cfg')">
-  <div class="modal">
-    <div class="mhd"><h3>⚙️ 설정</h3><button class="btn-close" onclick="closeModal('modal-cfg')">✕</button></div>
-    <div class="fg" style="margin-bottom:16px">
-      <label>Google Apps Script URL (선택 — 기기 간 동기화)</label>
-      <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/..." style="margin-top:4px">
-      <p class="hint">설정하면 어디서든 동일한 데이터를 사용할 수 있습니다.<br>비워두면 이 브라우저에만 저장됩니다.</p>
+<!-- ===== TAB 2: 정산 ===== -->
+<div id="tab2" class="tab-content">
+  <div class="card">
+    <h2>💰 정산 계산</h2>
+    <div class="alert alert-info">
+      ① 원본 주문파일 + ② 소낭 발주서(송장 포함)를 업로드하면 정산 내역을 계산합니다.<br>
+      <small>쿠팡 수수료 10.8% / 스마트스토어 5.5% 자동 적용 | 매입가: 2kg 12,000원 / 3kg 15,000원 / 5kg 21,000원</small>
     </div>
-    <div class="brow">
-      <button class="btn btn-pr" onclick="saveSettings()">저장</button>
-      <button class="btn btn-ol" onclick="syncFromGAS()" id="btn-sync-from" style="display:none">☁️ 구글시트에서 불러오기</button>
-      <button class="btn btn-ol" onclick="syncToGAS()" id="btn-sync-to" style="display:none">☁️ 구글시트에 저장</button>
+
+    <div class="two-col">
+      <div>
+        <h3><span class="step-num">1</span> 원본 주문파일 (쿠팡/SS)</h3>
+        <div class="file-area" id="drop2a">
+          <input type="file" id="file2a" accept=".xlsx,.xls" onchange="onFile2a(this)">
+          <div class="icon">📂</div>
+          <div class="label">DeliveryList 또는<br>스마트스토어 발주파일</div>
+          <div class="filename" id="fname2a"></div>
+        </div>
+      </div>
+      <div>
+        <h3><span class="step-num">2</span> 소낭 발주서 (송장번호 포함)</h3>
+        <div class="file-area" id="drop2b">
+          <input type="file" id="file2b" accept=".xlsx,.xls" onchange="onFile2b(this)">
+          <div class="icon">📬</div>
+          <div class="label">소낭친환경에서 받은<br>송장번호 포함 발주서</div>
+          <div class="filename" id="fname2b"></div>
+        </div>
+      </div>
     </div>
-    <hr style="margin:16px 0;border:none;border-top:1px solid #eee">
-    <div class="brow">
-      <button class="btn" style="background:#fff3f3;color:#c00;border:1px solid #fcc" onclick="resetOrders()">🗑️ 주문목록 초기화</button>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="runSettlement()" id="btnSettle" disabled>💰 정산 계산하기</button>
     </div>
-    <p class="hint" style="color:#c00">주문 목록만 삭제됩니다. 정산내역·처리이력은 유지됩니다.</p>
-    <div id="sync-status" class="hint" style="margin-top:8px"></div>
+  </div>
+
+  <div id="result2" class="hidden">
+    <div class="card">
+      <h2>📊 정산 요약</h2>
+      <div class="summary-grid">
+        <div class="summary-box"><div class="val" id="s2total">0</div><div class="lbl">매칭 건수</div></div>
+        <div class="summary-box"><div class="val" id="s2sales">0</div><div class="lbl">총 매출</div></div>
+        <div class="summary-box"><div class="val" id="s2supply">0</div><div class="lbl">총 매입비</div></div>
+        <div class="summary-box"><div class="val" id="s2fee">0</div><div class="lbl">총 수수료</div></div>
+        <div class="summary-box"><div class="val" id="s2profit">0</div><div class="lbl">총 순이익</div></div>
+        <div class="summary-box"><div class="val" id="s2margin">0%</div><div class="lbl">마진율</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="downloadSettlement()">⬇️ 정산 엑셀 다운로드</button>
+      </div>
+      <div class="divider"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>받는사람</th><th>채널</th><th>옵션</th><th>수량</th><th>판매가</th><th>매입비</th><th>수수료</th><th>순이익</th><th>마진율</th></tr>
+          </thead>
+          <tbody id="tbody2"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-// =====================================================
-// CONFIG
-// =====================================================
-const SUPPLY = { '2kg':12000, '3kg':15000, '5kg':21000 };
-const SALE_CP = { '2kg':15900, '3kg':19900, '5kg':27900 };
-const SALE_SS = { '2kg':15400, '3kg':19400, '5kg':27400 };
-const SALE_DG = { '2kg':15400, '3kg':19400, '5kg':27400 };
-const SALE = { '쿠팡':SALE_CP, '스마트스토어':SALE_SS, '당근마켓':SALE_DG };
-const FEE = { '쿠팡':0.108, '스마트스토어':0.055, '당근마켓':0 };
-const CH_BG = { '쿠팡':'#E8F5E9', '스마트스토어':'#E3F2FD', '당근마켓':'#FFF9C4' };
-const CH_TX = { '쿠팡':'#2E7D32', '스마트스토어':'#1565C0', '당근마켓':'#F57F17' };
-const CH_PFX = { '쿠팡':'[CP]', '스마트스토어':'[SS]', '당근마켓':'[DG]' };
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const SUPPLY = { '2kg': 12000, '3kg': 15000, '5kg': 21000 };
+const FEE_RT = { '쿠팡': 0.108, '스마트스토어': 0.055 };
+const SENDER = {
+  name:  '돌망돌망',
+  zip:   '',
+  addr:  '제주특별자치도 서귀포시 표선면 서성일로 89',
+  phone: '010-2272-3645'
+};
 
-// =====================================================
-// STATE
-// =====================================================
-let S = { orders:[], history:{byOrder:[],byNamePhone:[]}, settlement:[], cfg:{gasUrl:''} };
+/* ============================================================
+   IN-MEMORY STATE (no localStorage)
+   ============================================================ */
+let state0 = { orders: [], platform: '' };
+let state1 = { orders: [], platform: '' };
+let state2 = { rows: [], platform: '' };
+let rawWb1 = null; // keep original wb for coupang upload
 
-
-const SEED_SETTLE = [{"orderDate": "2026-04-12", "name": "노일균", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445317184"}, {"orderDate": "2026-04-12", "name": "전유진", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445317173"}, {"orderDate": "2026-04-12", "name": "황정숙", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445317195"}, {"orderDate": "2026-04-13", "name": "주정호", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445321362"}, {"orderDate": "2026-04-15", "name": "김지혜", "option": "1개 5kg", "channel": "쿠팡", "salePrice": 27900, "costPrice": 21000, "fee": 3013, "profit": 3887, "margin": 13.9, "trackingNo": "254445326461"}, {"orderDate": "2026-04-15", "name": "성영숙", "option": "1개 5kg", "channel": "쿠팡", "salePrice": 27900, "costPrice": 21000, "fee": 3013, "profit": 3887, "margin": 13.9, "trackingNo": "254445326450"}, {"orderDate": "2026-04-15", "name": "이혜림", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445326424"}, {"orderDate": "2026-04-15", "name": "정은영", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445326446"}, {"orderDate": "2026-04-15", "name": "천선주", "option": "1개 5kg", "channel": "쿠팡", "salePrice": 27900, "costPrice": 21000, "fee": 3013, "profit": 3887, "margin": 13.9, "trackingNo": "254445326435"}, {"orderDate": "2026-04-16", "name": "권장옥", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445326472"}, {"orderDate": "2026-04-16", "name": "김희자", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445329773"}, {"orderDate": "2026-04-16", "name": "박은미", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445329806"}, {"orderDate": "2026-04-16", "name": "오숙자", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445329784"}, {"orderDate": "2026-04-16", "name": "조정자", "option": "1개 3kg", "channel": "쿠팡", "salePrice": 19900, "costPrice": 15000, "fee": 2149, "profit": 2751, "margin": 13.8, "trackingNo": "254445329810"}, {"orderDate": "2026-04-16", "name": "황민희", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": "254445329795"}, {"orderDate": "2026-04-17", "name": "윤여선", "option": "1개 5kg", "channel": "쿠팡", "salePrice": 27900, "costPrice": 21000, "fee": 3013, "profit": 3887, "margin": 13.9, "trackingNo": "254445329924"}, {"orderDate": "2026-04-17", "name": "이혜진", "option": "1개 3kg", "channel": "쿠팡", "salePrice": 19900, "costPrice": 15000, "fee": 2149, "profit": 2751, "margin": 13.8, "trackingNo": "254445329902"}, {"orderDate": "2026-04-17", "name": "최정윤", "option": "1개 2kg", "channel": "쿠팡", "salePrice": 15900, "costPrice": 12000, "fee": 1717, "profit": 2183, "margin": 13.7, "trackingNo": ""}, {"orderDate": "2026-04-17", "name": "최지현", "option": "1개 5kg", "channel": "쿠팡", "salePrice": 27900, "costPrice": 21000, "fee": 3013, "profit": 3887, "margin": 13.9, "trackingNo": "254445329913"}];
-function loadState() {
-  try {
-    S.orders      = JSON.parse(localStorage.getItem('dm_orders') || '[]');
-    S.history     = JSON.parse(localStorage.getItem('dm_history') || '{"byOrder":[],"byNamePhone":[]}');
-    S.settlement  = JSON.parse(localStorage.getItem('dm_settle') || JSON.stringify(SEED_SETTLE));
-    S.cfg         = JSON.parse(localStorage.getItem('dm_cfg') || '{"gasUrl":""}');
-  } catch(e) {}
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function normPhone(p) {
+  return String(p || '').replace(/[^0-9]/g, '');
 }
-
-let _autoSyncTimer = null;
-function saveState() {
-  localStorage.setItem('dm_orders', JSON.stringify(S.orders));
-  localStorage.setItem('dm_history', JSON.stringify(S.history));
-  localStorage.setItem('dm_settle', JSON.stringify(S.settlement));
-  localStorage.setItem('dm_cfg', JSON.stringify(S.cfg));
-  // GAS URL 설정돼 있으면 3초 후 자동 싱크 (디바운스)
-  if(S.cfg.gasUrl) {
-    clearTimeout(_autoSyncTimer);
-    setAutoSyncIndicator('대기중...');
-    _autoSyncTimer = setTimeout(() => autoSyncToGAS(), 3000);
-  }
-}
-
-async function setAutoSyncIndicator(msg) {
-  const el = document.getElementById('auto-sync-status');
-  if(el) el.textContent = msg;
-}
-
-async function autoSyncToGAS() {
-  if(!S.cfg.gasUrl) return;
-  setAutoSyncIndicator('☁️ 저장 중...');
-  try {
-    const lite = S.orders.map(o=>{const c={...o};delete c.rawRow;delete c.rawHeaders;delete c.rawCol;return c;});
-    await fetch(S.cfg.gasUrl, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'saveAll', orders:lite, history:S.history, settlement:S.settlement})
-    });
-    setAutoSyncIndicator('☁️ 저장됨 ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
-  } catch(e) {
-    setAutoSyncIndicator('⚠️ 저장 실패');
-  }
-}
-
-// =====================================================
-// UTILS
-// =====================================================
-const normPhone = p => String(p||'').replace(/[^0-9]/g,'');
-const fmtPrice  = n => Number(n||0).toLocaleString()+'원';
-const fmtDate   = d => String(d||'').slice(0,10);
-const todayStr  = () => new Date().toISOString().slice(0,10);
-const genId     = ch => { const p={'쿠팡':'CP','스마트스토어':'SS','당근마켓':'DG'}[ch]||'XX'; return `${p}_${Date.now()}_${Math.random().toString(36).slice(2,5)}`; };
 
 function extractSize(opt) {
-  const s = String(opt||'').replace(/\s/g,'').toLowerCase();
-  if(s.includes('5kg')) return '5kg';
-  if(s.includes('3kg')) return '3kg';
-  if(s.includes('2kg')) return '2kg';
-  return '';
+  const m = String(opt || '').match(/(\d+)\s*kg/i);
+  return m ? m[1] + 'kg' : null;
 }
 
-function inHistory(o) {
-  if(S.history.byOrder.includes(o.orderId)) return true;
-  const k = `${o.name}_${normPhone(o.phone)}`;
-  return S.history.byNamePhone.includes(k);
+function todayStr() {
+  return new Date().toISOString().slice(0, 10).replace(/-/g, '');
 }
 
-function addHistory(orders) {
-  for(const o of orders) {
-    if(!S.history.byOrder.includes(o.orderId)) S.history.byOrder.push(o.orderId);
-    const k=`${o.name}_${normPhone(o.phone)}`;
-    if(!S.history.byNamePhone.includes(k)) S.history.byNamePhone.push(k);
-  }
+function comma(n) {
+  return Math.round(n).toLocaleString('ko-KR');
 }
 
-function chTag(ch) {
-  return `<span class="chtag" style="background:${CH_BG[ch]||'#eee'};color:${CH_TX[ch]||'#333'}">${ch}</span>`;
+function formatPhone(p) {
+  const d = String(p || '');
+  if (d.length === 11) return d.slice(0,3) + '-' + d.slice(3,7) + '-' + d.slice(7);
+  if (d.length === 10) return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6);
+  return d;
 }
 
-// =====================================================
-// EXCEL IMPORT
-// =====================================================
-function detectPlatform(fname, headers) {
-  const f = String(fname).toLowerCase();
-  if(f.includes('deliverylist')) return 'coupang';
-  if(f.includes('스마트스토어')) return 'smartstore';
-  const hs = new Set(headers);
-  if(hs.has('상품주문번호') && hs.has('통합배송지')) return 'smartstore';
-  return 'coupang';
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-async function readXlsx(file) {
-  return new Promise((ok,err) => {
-    const r = new FileReader();
-    r.onload = e => { try { ok(XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true})); } catch(ex){err(ex);} };
-    r.onerror = err;
-    r.readAsArrayBuffer(file);
+function showEl(id) { document.getElementById(id).classList.remove('hidden'); }
+function hideEl(id) { document.getElementById(id).classList.add('hidden'); }
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+function switchTab(n) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === n));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === n));
+}
+
+/* ============================================================
+   FILE READING
+   ============================================================ */
+function readXlsx(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        resolve(wb);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
   });
 }
 
-async function parseOrderFile(wb, fname) {
-  const sn = wb.SheetNames.includes('Delivery') ? 'Delivery' : wb.SheetNames[0];
-  const ws = wb.Sheets[sn];
-  const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-  if(rows.length < 2) return [];
-  const headers = rows[0].map(h=>String(h||''));
-  const col = {}; headers.forEach((h,i)=>{ if(h) col[h]=i; });
-  const platform = detectPlatform(fname, headers);
-  const orders = [];
+function setFileLabel(areaId, fnameId, name) {
+  document.getElementById(fnameId).textContent = '✅ ' + name;
+  document.getElementById(areaId).classList.add('has-file');
+}
 
-  const g = (row,key,def) => {
-    const i = col[key]!==undefined ? col[key] : def;
-    return (i!==undefined && i<row.length) ? row[i] : '';
-  };
+/* Tab 0 */
+var _file0 = null;
+function onFile0(inp) {
+  _file0 = inp.files[0];
+  if (_file0) {
+    setFileLabel('drop0', 'fname0', _file0.name);
+    document.getElementById('btnBaljoo').disabled = false;
+  }
+}
 
-  for(let i=1; i<rows.length; i++) {
-    const row = rows[i];
-    if(!row[0] && !row[1]) continue;
+/* Tab 1 */
+var _file1a = null, _file1b = null;
+function onFile1a(inp) { _file1a = inp.files[0]; if (_file1a) setFileLabel('drop1a', 'fname1a', _file1a.name); checkBtn1(); }
+function onFile1b(inp) { _file1b = inp.files[0]; if (_file1b) setFileLabel('drop1b', 'fname1b', _file1b.name); checkBtn1(); }
+function checkBtn1() { document.getElementById('btnTracking').disabled = !(_file1a && _file1b); }
 
-    if(platform==='coupang') {
-      const oid = String(g(row,'주문번호',2)||'0').trim();
-      if(!oid||oid==='0') continue;
-      const opt = String(g(row,'등록옵션명',11)||g(row,'노출상품명(옵션명)',12)||'');
-      const sz  = extractSize(opt);
+/* Tab 2 */
+var _file2a = null, _file2b = null;
+function onFile2a(inp) { _file2a = inp.files[0]; if (_file2a) setFileLabel('drop2a', 'fname2a', _file2a.name); checkBtn2(); }
+function onFile2b(inp) { _file2b = inp.files[0]; if (_file2b) setFileLabel('drop2b', 'fname2b', _file2b.name); checkBtn2(); }
+function checkBtn2() { document.getElementById('btnSettle').disabled = !(_file2a && _file2b); }
+
+/* ============================================================
+   PLATFORM DETECTION
+   ============================================================ */
+function detectPlatform(headers, filename) {
+  const fn = String(filename || '').toLowerCase();
+  if (fn.includes('deliverylist')) return '쿠팡';
+  if (headers.some(function(h) { return String(h).includes('상품주문번호'); })) return '스마트스토어';
+  if (headers.some(function(h) { return String(h).includes('통합배송지'); })) return '스마트스토어';
+  return '쿠팡';
+}
+
+/* ============================================================
+   PARSE DELIVERY FILE
+   Returns { platform, orders[] }
+
+   Coupang columns (0-indexed):
+   2:주문번호  3:택배사  4:운송장번호  9:주문일
+   11:등록옵션명  18:결제액  22:구매수(수량)
+   26:수취인이름  27:수취인전화번호  28:우편번호
+   29:수취인주소  30:배송메세지
+   ============================================================ */
+function parseDelivery(wb, filename) {
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  if (rows.length < 2) throw new Error('파일에 데이터가 없습니다.');
+
+  var headers = rows[0].map(function(h) { return String(h || ''); });
+  var platform = detectPlatform(headers, filename);
+  var orders = [];
+
+  if (platform === '쿠팡') {
+    for (var i = 1; i < rows.length; i++) {
+      var r = rows[i];
+      var orderId = String(r[2] || '').trim();
+      if (!orderId) continue;
       orders.push({
-        id:`CP_${oid}`, orderId:oid, channel:'쿠팡',
-        orderDate:fmtDate(g(row,'주문일',9)),
-        name:String(g(row,'수취인이름',26)||'0').trim(),
-        phone:normPhone(g(row,'수취인전화번호',27)),
-        zipcode:String(g(row,'우편번호',28)||'0'),
-        address:String(g(row,'수취인 주소',29)||''),
-        option:opt, size:sz, qty:Number(g(row,'구매수(수량)',22)||1),
-        deliveryMsg:String(g(row,'배송메세지',30)||''),
-        salePrice:Number(g(row,'결제액',18)||0),
-        costPrice:SUPPLY[sz]||0,
-        status:'pending', trackingNo:'', courier:'',
-        rawRow:[...row], rawHeaders:[...headers], rawCol:{...col}
+        rowIdx:    i,
+        rawRow:    r.slice(), // copy
+        platform:  '쿠팡',
+        orderId:   orderId,
+        orderDate: String(r[9] || '').slice(0, 10),
+        option:    String(r[11] || '').trim(),
+        payment:   Number(r[18]) || 0,
+        qty:       Number(r[22]) || 1,
+        name:      String(r[26] || '').trim(),
+        phone:     normPhone(r[27]),
+        zip:       String(r[28] || '').trim(),
+        addr:      String(r[29] || '').trim(),
+        msg:       String(r[30] || '').trim()
       });
-    } else {
-      const oid = String(g(row,'상품주문번호',0)||'').trim();
-      if(!oid) continue;
-      const opt = String(g(row,'옵션정보',16)||'');
-      const sz  = extractSize(opt);
-      let zc = g(row,'우편번호',18);
-      zc = typeof zc==='number' ? String(Math.round(zc)).padStart(5,'0') : String(zc||'');
-      let od = g(row,'결제일',17);
-      if(od instanceof Date) od = od.toISOString().slice(0,10); else od = fmtDate(od);
-      const sp = Number(g(row,'상품별 총 주문금액',25)||g(row,'상품가격',22)||0);
+    }
+
+  } else {
+    // SmartStore — detect columns dynamically
+    function hIdx(name) { return headers.findIndex(function(h) { return h.includes(name); }); }
+    var cOrderId = hIdx('상품주문번호');
+    var cName    = (function() { var c = hIdx('수취인명'); return c >= 0 ? c : hIdx('받는분성명'); })();
+    var cPhone   = hIdx('수취인전화번호');
+    var cAddr    = (function() { var c = hIdx('통합배송지'); return c >= 0 ? c : hIdx('배송지'); })();
+    var cOpt     = (function() { var c = hIdx('옵션정보'); return c >= 0 ? c : hIdx('상품명'); })();
+    var cQty     = hIdx('수량');
+    var cPay     = (function() { var c = hIdx('상품금액'); return c >= 0 ? c : hIdx('결제금액'); })();
+    var cMsg     = (function() { var c = hIdx('배송메모'); return c >= 0 ? c : hIdx('배송 메세지'); })();
+    var cZip     = hIdx('우편번호');
+
+    for (var i = 1; i < rows.length; i++) {
+      var r = rows[i];
+      var orderId = String(cOrderId >= 0 ? r[cOrderId] : '').trim();
+      if (!orderId) continue;
       orders.push({
-        id:`SS_${oid}`, orderId:oid, channel:'스마트스토어',
-        orderDate:od,
-        name:String(g(row,'수취인명',11)||'').trim(),
-        phone:normPhone(g(row,'수취인연락처1',12)),
-        zipcode:zc,
-        address:String(g(row,'통합배송지',14)||''),
-        option:opt, size:sz,
-        qty:Number(g(row,'수량',20)||1),
-        deliveryMsg:String(g(row,'배송메세지',19)||''),
-        salePrice:sp, costPrice:SUPPLY[sz]||0,
-        status:'pending', trackingNo:'', courier:'',
-        rawRow:[...row], rawHeaders:[...headers], rawCol:{...col}
+        rowIdx:    i,
+        rawRow:    r.slice(),
+        platform:  '스마트스토어',
+        orderId:   orderId,
+        orderDate: '',
+        option:    String(cOpt >= 0 ? r[cOpt] : '').trim(),
+        payment:   Number(cPay >= 0 ? r[cPay] : 0) || 0,
+        qty:       Number(cQty >= 0 ? r[cQty] : 1) || 1,
+        name:      String(cName >= 0 ? r[cName] : '').trim(),
+        phone:     normPhone(cPhone >= 0 ? r[cPhone] : ''),
+        zip:       String(cZip >= 0 ? r[cZip] : '').trim(),
+        addr:      String(cAddr >= 0 ? r[cAddr] : '').trim(),
+        msg:       String(cMsg >= 0 ? r[cMsg] : '').trim()
       });
     }
   }
-  return orders;
+
+  return { platform: platform, orders: orders };
 }
 
-async function handleOrderFiles(files) {
-  let added=0, dup=0;
-  const existing = new Set(S.orders.map(o=>o.id));
-  for(const f of files) {
-    try {
-      const wb = await readXlsx(f);
-      const ords = parseOrderFile(wb, f.name);
-      for(const o of ords) {
-        if(!existing.has(o.id)){ S.orders.push(o); existing.add(o.id); added++; }
-        else {
-          // rawRow/rawHeaders/rawCol 갱신 (새로고침 후 재업로드 시 복원)
-          const ex = S.orders.find(e=>e.id===o.id);
-          if(ex){ ex.rawRow=o.rawRow; ex.rawHeaders=o.rawHeaders; ex.rawCol=o.rawCol; }
-          dup++;
-        }
-      }
-    } catch(e) { showToast(`❌ 파일 오류: ${f.name}`); }
-  }
-  saveState(); renderAll();
-  if(added>0) showToast(`✅ ${added}건 추가됨${dup>0?` (중복 ${dup}건 제외)`:''}`);
-  else showToast(`⚠️ 이미 등록된 주문입니다 (${dup}건 중복)`);
-  document.getElementById('fi-orders').value='';
-}
+/* ============================================================
+   PARSE TRACKING FILE (소낭발주서 with tracking)
+   소낭 columns (0-indexed):
+   5:받는사람  8:전화번호1  17:택배사  18:송장번호
+   Returns Map: "name_phone" → { carrier, trackNum }
+   ============================================================ */
+function parseTrk(wb) {
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  var map = new Map();
 
-// =====================================================
-// TRACKING FILE PROCESSING
-// =====================================================
-async function handleTrackingFile(file) {
-  if(!file) return;
-  try {
-    const wb = await readXlsx(file);
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    const headers = rows[0].map(h=>String(h||'')); 
-    const col={}; headers.forEach((h,i)=>{ if(h) col[h]=i; });
-    const tmap={};
-    for(let i=1;i<rows.length;i++){
-      const row=rows[i]; if(!row[0]) continue;
-      const name   = String(row[col['받는사람']??5]||'').trim();
-      const phone  = normPhone(row[col['전화번호1']??col['전화번호']??8]||'');
-      const cour   = String(row[17]||'CJ대한통운');
-      const trk    = String(row[18]||'').trim();
-      if(name && trk){ tmap[`${name}_${phone}`]={courier:cour,trackingNo:trk}; tmap[`${name}_`]={courier:cour,trackingNo:trk}; }
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var name     = String(r[5] || '').trim();
+    var phone    = normPhone(r[8]);
+    var note     = String(r[15] || '');  // 특기사항 (주문번호 포함)
+    var carrier  = String(r[17] || '').trim();
+    var trackNum = String(r[18] || '').trim();
+    if (!trackNum) continue;
+
+    // 1순위: 특기사항에서 주문번호 추출 ([21100185024691] 형식)
+    var m = note.match(/\[(\d{8,}?)\]/);
+    if (m) {
+      var oid = m[1];
+      if (!map.has('id_' + oid)) map.set('id_' + oid, { carrier: carrier, trackNum: trackNum });
     }
-    processTracking(tmap);
-  } catch(e){ showToast('❌ 파일 읽기 실패: '+e.message); }
-  document.getElementById('fi-tracking').value='';
-}
 
-function resetOrders() {
-  if(!confirm('주문 목록을 초기화합니다. 정산/처리이력은 유지됩니다. 계속할까요?')) return;
-  S.orders = [];
-  saveState(); renderAll();
-  showToast('✅ 주문 초기화 완료. 쿠팡 파일을 다시 업로드해주세요.');
-}
-
-function processTracking(tmap) {
-  const targets = S.orders; // 상태 무관 전체 매칭
-  let matched=0, unmatched=0;
-  for(const o of targets){
-    const k1=`${o.name}_${normPhone(o.phone)}`, k2=`${o.name}_`;
-    const t=tmap[k1]||tmap[k2];
-    if(t&&t.trackingNo){ o.trackingNo=t.trackingNo; o.courier=t.courier; o.status='shipped'; matched++; }
-    else unmatched++;
+    // 2순위: 이름+전화 fallback
+    if (!name) continue;
+    var keyFull = name + '_' + phone;
+    var keyName = name + '_';
+    if (!map.has(keyFull)) map.set(keyFull, { carrier: carrier, trackNum: trackNum });
+    if (!map.has(keyName)) map.set(keyName, { carrier: carrier, trackNum: trackNum });
   }
-  const shipped = targets.filter(o=>o.status==='shipped');
-  addHistory(shipped);
-  // settlement
-  const existIds = new Set(S.settlement.map(s=>s.id));
-  for(const o of shipped){
-    if(existIds.has(o.id)) continue;
-    const fee = Math.round(o.salePrice*(FEE[o.channel]||0));
-    const profit = o.salePrice-o.costPrice-fee;
-    S.settlement.push({id:o.id,orderId:o.orderId,orderDate:o.orderDate,name:o.name,option:o.option,size:o.size,channel:o.channel,salePrice:o.salePrice,costPrice:o.costPrice,fee,profit,margin:o.salePrice>0?(profit/o.salePrice*100).toFixed(1):'0',trackingNo:o.trackingNo});
-  }
-  saveState();
-  // generate download files
-  const cpShipped = shipped.filter(o=>o.channel==='쿠팡');
-  const ssShipped = shipped.filter(o=>o.channel==='스마트스토어');
-  const dt = todayStr().replace(/-/g,'');
-  if(cpShipped.length) XLSX.writeFile(genCoupangUpload(cpShipped), `쿠팡송장업로드_${dt}.xlsx`);
-  if(ssShipped.length) XLSX.writeFile(genSSUpload(ssShipped), `스마트스토어송장업로드_${dt}.xlsx`);
-  renderAll();
-  renderTrackingResult(targets, matched, unmatched);
+
+  return map;
 }
 
-// =====================================================
-// EXCEL EXPORT
-// =====================================================
-function genBaljooWb(orders) {
-  // 소낭친환경 배송 시스템 포맷 (샘플 기준)
-  const SENDER_NAME    = '돌망돌망';
-  const SENDER_ADDR    = '제주특별자치도 서귀포시 표선면 서성일로 89';
-  const SENDER_PHONE   = '010-2272-3645';
-  const DELIVERY_FEE   = 4500;
+/* ============================================================
+   MATCH: find tracking for an order (full key → name fallback)
+   ============================================================ */
+function findTrk(trkMap, order) {
+  // 1순위: 주문번호 매칭 (가장 정확)
+  if (order.orderId) {
+    var byId = trkMap.get('id_' + order.orderId);
+    if (byId) return byId;
+  }
+  // 2순위: 이름+전화번호 fallback
+  var keyFull = order.name + '_' + order.phone;
+  var keyName = order.name + '_';
+  return trkMap.get(keyFull) || trkMap.get(keyName) || null;
+}
 
-  const hdr = [
+/* ============================================================
+   TAB 0: 발주서 생성
+   ============================================================ */
+function runBaljoo() {
+  if (!_file0) return;
+  readXlsx(_file0).then(function(wb) {
+    var result = parseDelivery(wb, _file0.name);
+    var platform = result.platform;
+    var orders   = result.orders;
+
+    if (orders.length === 0) { showToast('❌ 주문 데이터가 없습니다.'); return; }
+
+    state0 = { orders: orders, platform: platform };
+
+    var cnt2 = 0, cnt3 = 0, cnt5 = 0;
+    orders.forEach(function(o) {
+      var sz = extractSize(o.option);
+      if (sz === '2kg') cnt2 += o.qty;
+      else if (sz === '3kg') cnt3 += o.qty;
+      else if (sz === '5kg') cnt5 += o.qty;
+    });
+
+    document.getElementById('b0total').textContent = orders.length;
+    document.getElementById('b0plat').textContent  = platform;
+    document.getElementById('b02kg').textContent   = cnt2;
+    document.getElementById('b03kg').textContent   = cnt3;
+    document.getElementById('b05kg').textContent   = cnt5;
+
+    var tbody = document.getElementById('tbody0');
+    tbody.innerHTML = '';
+    orders.forEach(function(o, idx) {
+      var tr = document.createElement('tr');
+      var addrShort = o.addr.length > 30 ? o.addr.slice(0, 30) + '…' : o.addr;
+      var msgShort  = o.msg.length > 25  ? o.msg.slice(0, 25) + '…' : o.msg;
+      tr.innerHTML =
+        '<td>' + (idx+1) + '</td>' +
+        '<td>' + o.name + '</td>' +
+        '<td>' + formatPhone(o.phone) + '</td>' +
+        '<td>' + o.option + '</td>' +
+        '<td>' + o.qty + '</td>' +
+        '<td title="' + o.addr + '">' + addrShort + '</td>' +
+        '<td title="' + o.msg + '">' + msgShort + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    showEl('result0');
+    showToast('✅ ' + orders.length + '건 파싱 완료 (' + platform + ')');
+
+  }).catch(function(err) {
+    showToast('❌ 오류: ' + err.message);
+    console.error(err);
+  });
+}
+
+function downloadBaljoo() {
+  if (!state0.orders.length) return;
+
+  var HDR = [
     '보내는사람(지정)','우편번호(지정)','주소(지정)','전화번호1(지정)','전화번호2(지정)',
     '받는사람','우편번호','주소','전화번호1','전화번호2',
     '수량(A타입)','수량(B타입)','수량(C타입)','운임구분','상품명1','특기사항','운임'
   ];
 
-  const rows = orders.map(o => {
-    // 옵션에서 kg 단위 추출 (예: '2kg', '흙당근 3kg', '5kg 1개' 등)
-    const optRaw = String(o.option || o.size || '');
-    const kgMatch = optRaw.match(/(\d+)\s*kg/i);
-    const kgStr = kgMatch ? kgMatch[1] + 'kg' : optRaw || '2kg';
-    const qty = o.qty || 1;
-    const productLabel = `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${kgStr} ${qty}개)`;
-    const note = String(o.deliveryMsg || '').trim();
-
-    return [
-      SENDER_NAME, null, SENDER_ADDR, SENDER_PHONE, null,
-      o.name, o.zipcode||null, o.address, o.phone, null,
-      qty, 0, 0, 3,
-      productLabel, note, DELIVERY_FEE
-    ];
+  var aoa = [HDR];
+  state0.orders.forEach(function(o) {
+    var sz = extractSize(o.option);
+    var qa = sz === '2kg' ? o.qty : 0;
+    var qb = sz === '3kg' ? o.qty : 0;
+    var qc = sz === '5kg' ? o.qty : 0;
+    // 상품명: 소낭친환경 시스템 양식 전체 상품명
+    var productLabel = '돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (' + sz + ' ' + o.qty + '개)';
+    // 특기사항: 주문번호 포함 (매칭용) + 배송메시지
+    var note = '[' + o.orderId + '] ' + o.msg;
+    aoa.push([
+      SENDER.name, SENDER.zip, SENDER.addr, SENDER.phone, '',
+      o.name, o.zip, o.addr, o.phone, '',
+      qa, qb, qc,
+      3, productLabel,
+      note,
+      4500
+    ]);
   });
 
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([hdr, ...rows]);
-  const colWidths = [12,8,40,14,8,10,8,40,14,8,10,10,10,8,60,20,8];
-  ws['!cols'] = colWidths.map(w=>({wch:w}));
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [
+    {wch:12},{wch:8},{wch:30},{wch:14},{wch:8},
+    {wch:10},{wch:8},{wch:40},{wch:14},{wch:8},
+    {wch:10},{wch:10},{wch:10},{wch:8},{wch:20},{wch:30},{wch:6}
+  ];
   XLSX.utils.book_append_sheet(wb, ws, '발주서');
-  return wb;
+
+  var mmdd = todayStr().slice(5).replace(/-/g,'');
+  XLSX.writeFile(wb, mmdd + ' 돌망돌망발주.xlsx');
+  showToast('✅ 발주서 다운로드 완료!');
 }
 
-function genCoupangUpload(orders) {
-  const wb=XLSX.utils.book_new();
-  const first=orders.find(o=>o.rawHeaders);
-  if(!first){ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['데이터없음']]),'Delivery'); return wb; }
-  const data=[first.rawHeaders];
-  for(const o of orders){
-    const row=[...(o.rawRow||[])];
-    const rc=o.rawCol||{};
-    row[rc['택배사']??3]=o.courier||'CJ대한통운';
-    row[rc['운송장번호']??4]=o.trackingNo||'';
-    data.push(row);
-  }
-  const ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=first.rawHeaders.map(()=>({wch:18}));
-  XLSX.utils.book_append_sheet(wb,ws,'Delivery'); return wb;
-}
+/* ============================================================
+   TAB 1: 송장 처리
+   ============================================================ */
+function runTracking() {
+  if (!_file1a || !_file1b) return;
 
-function genSSUpload(orders) {
-  const hdr=['상품주문번호','배송방법','택배사','송장번호'];
-  const rows=orders.map(o=>[o.orderId,'택배,등기,소포',o.courier||'CJ대한통운',o.trackingNo]);
-  const wb=XLSX.utils.book_new(), ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
-  ws['!cols']=hdr.map(()=>({wch:20})); XLSX.utils.book_append_sheet(wb,ws,'발송처리'); return wb;
-}
+  Promise.all([readXlsx(_file1a), readXlsx(_file1b)]).then(function(results) {
+    rawWb1 = results[0];
+    var trkWb = results[1];
 
-function downloadBaljoo(force) {
-  const orders = force ? S.orders : S.orders.filter(o=>!inHistory(o));
-  if(!orders.length){ showToast(force?'⚠️ 주문이 없습니다':'⚠️ 신규 주문이 없습니다'); return; }
-  const dt=todayStr().replace(/-/g,'');
-  XLSX.writeFile(genBaljooWb(orders), `${dt} 돌망돌망발주${force?'_합산':''}.xlsx`);
-  if(!force){ orders.forEach(o=>{ if(o.status==='pending') o.status='baljoo'; }); saveState(); renderAll(); }
-  showToast(`✅ 발주서 생성 완료 (${orders.length}건)`);
-}
+    var parsed = parseDelivery(rawWb1, _file1a.name);
+    var platform = parsed.platform;
+    var orders   = parsed.orders;
+    var trkMap   = parseTrk(trkWb);
 
-function exportSettlement() {
-  if(!S.settlement.length){ showToast('⚠️ 정산 데이터가 없습니다'); return; }
-  const hdr=['번호','주문번호','주문일','수취인','상품옵션','용량','채널','판매가','매입가','수수료','순이익','마진율(%)','송장번호'];
-  const rows=S.settlement.map((s,i)=>[i+1,s.orderId,s.orderDate,s.name,s.option,s.size,s.channel,s.salePrice,s.costPrice,s.fee,s.profit,s.margin,s.trackingNo]);
-  const wb=XLSX.utils.book_new(), ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
-  ws['!cols']=hdr.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,'정산내역');
-  XLSX.writeFile(wb,`당근_정산누적_${todayStr().replace(/-/g,'')}.xlsx`);
-  showToast('✅ 정산 파일 다운로드 완료');
-}
+    if (orders.length === 0) { showToast('❌ 주문 데이터가 없습니다.'); return; }
 
-// =====================================================
-// RENDERING
-// =====================================================
-let curFilter='all';
+    var matched = 0;
+    var missList = [];
+    var resultOrders = orders.map(function(o) {
+      var trk = findTrk(trkMap, o);
+      if (trk) matched++;
+      else missList.push(o.name);
+      return Object.assign({}, o, { trk: trk });
+    });
 
-function renderAll() { renderHeaderStats(); renderOrdersTable(); renderBaljooTab(); renderSettlement(); }
+    state1 = { orders: resultOrders, platform: platform };
 
-function renderHeaderStats() {
-  const t=S.orders.length, p=S.orders.filter(o=>!inHistory(o)).length, tod=S.orders.filter(o=>o.orderDate===todayStr()).length;
-  document.getElementById('hd-stats').textContent=`전체 ${t}건 | 신규 ${p}건 | 오늘 ${tod}건`;
-}
+    document.getElementById('t1total').textContent   = orders.length;
+    document.getElementById('t1matched').textContent = matched;
+    document.getElementById('t1miss').textContent    = orders.length - matched;
 
-function renderOrdersTable() {
-  const all=S.orders, cp=all.filter(o=>o.channel==='쿠팡'), ss=all.filter(o=>o.channel==='스마트스토어');
-  const dg=all.filter(o=>o.channel==='당근마켓'), pend=all.filter(o=>!inHistory(o));
-  document.getElementById('cnt-all').textContent=all.length;
-  document.getElementById('cnt-cp').textContent=cp.length;
-  document.getElementById('cnt-ss').textContent=ss.length;
-  document.getElementById('cnt-dg').textContent=dg.length;
-  document.getElementById('cnt-pending').textContent=pend.length;
-  let filt;
-  if(curFilter==='all') filt=all;
-  else if(curFilter==='pending') filt=pend;
-  else filt=all.filter(o=>o.channel===curFilter);
-  if(!filt.length){ document.getElementById('orders-wrap').innerHTML='<div class="empty">주문이 없습니다 📭<br><small>위에서 파일을 업로드하세요</small></div>'; return; }
-  const rows=filt.map(o=>{
-    const hist=inHistory(o);
-    const stBdg=hist?(o.status==='shipped'?'<span class="bdg bdg-ok">✅ 출고완료</span>':'<span class="bdg bdg-gray">처리완료</span>'):'<span class="bdg bdg-warn">대기</span>';
-    return `<tr class="${hist?'done':''}"><td>${chTag(o.channel)}</td><td>${o.orderDate}</td><td><strong>${o.name}</strong><br><small style="color:var(--txl)">${o.phone}</small></td><td style="max-width:200px;word-break:break-all">${o.option||o.size||'–'}</td><td class="num">${fmtPrice(o.salePrice)}</td><td>${stBdg}</td><td style="font-size:12px">${o.trackingNo||'–'}</td><td><button class="btn-del" onclick="delOrder('${o.id}')">✕</button></td></tr>`;
-  }).join('');
-  document.getElementById('orders-wrap').innerHTML=`<table class="tbl"><thead><tr><th>채널</th><th>주문일</th><th>수취인</th><th>옵션</th><th>금액</th><th>상태</th><th>송장</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-}
+    // Download button
+    var dlDiv = document.getElementById('dlBtns1');
+    dlDiv.innerHTML = '';
+    var btn = document.createElement('button');
+    if (platform === '쿠팡') {
+      btn.className = 'btn btn-success';
+      btn.innerHTML = '⬇️ 쿠팡 송장 업로드파일 다운로드';
+      btn.onclick = downloadCoupangUpload;
+    } else {
+      btn.className = 'btn btn-success';
+      btn.innerHTML = '⬇️ 스마트스토어 송장 업로드파일 다운로드';
+      btn.onclick = downloadSSUpload;
+    }
+    dlDiv.appendChild(btn);
 
-function renderBaljooTab() {
-  const newOrds=S.orders.filter(o=>!inHistory(o));
-  const baljoo=S.orders.filter(o=>o.status==='baljoo');
-  const shipped=S.orders.filter(o=>o.status==='shipped');
-  document.getElementById('baljoo-stats').innerHTML=`<div class="srow"><div class="sbox warn"><div class="snum">${newOrds.length}</div><div class="slbl">신규 주문 (발주 대기)</div></div><div class="sbox"><div class="snum">${baljoo.length}</div><div class="slbl">발주 완료 (송장 대기)</div></div><div class="sbox ok"><div class="snum">${shipped.length}</div><div class="slbl">출고 완료</div></div></div>`;
-  if(!newOrds.length){ document.getElementById('baljoo-preview').innerHTML='<div class="empty">신규 주문이 없습니다</div>'; return; }
-  const miniRows=newOrds.map(o=>`<tr><td>${chTag(o.channel)}</td><td>${o.name}</td><td>${o.option||o.size||'–'}</td><td class="num">${fmtPrice(o.salePrice)}</td></tr>`).join('');
-  document.getElementById('baljoo-preview').innerHTML=`<table class="tbl"><thead><tr><th>채널</th><th>수취인</th><th>옵션</th><th>금액</th></tr></thead><tbody>${miniRows}</tbody></table>`;
-}
+    // Table
+    var tbody = document.getElementById('tbody1');
+    tbody.innerHTML = '';
+    resultOrders.forEach(function(o, idx) {
+      var ok = !!o.trk;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + (idx+1) + '</td>' +
+        '<td>' + o.name + '</td>' +
+        '<td>' + o.option + '</td>' +
+        '<td>' + o.qty + '</td>' +
+        '<td><span class="badge ' + (ok ? 'badge-ok' : 'badge-miss') + '">' + (ok ? '✅ 매칭' : '❌ 미매칭') + '</span></td>' +
+        '<td>' + (o.trk ? o.trk.carrier : '-') + '</td>' +
+        '<td>' + (o.trk ? o.trk.trackNum : '-') + '</td>';
+      tbody.appendChild(tr);
+    });
 
-function renderTrackingResult(orders, matched, unmatched) {
-  const rows=orders.map(o=>`<tr class="${o.status==='shipped'?'done':''}"><td>${o.name}</td><td>${chTag(o.channel)}</td><td>${o.option||o.size||'–'}</td><td>${o.status==='shipped'?`<span class="bdg bdg-ok">✅ ${o.trackingNo}</span>`:`<span class="bdg bdg-warn">❌ 미매칭</span>`}</td></tr>`).join('');
-  document.getElementById('tracking-result').innerHTML=`<div class="srow"><div class="sbox ok"><div class="snum">${matched}</div><div class="slbl">매칭 성공</div></div><div class="sbox warn"><div class="snum">${unmatched}</div><div class="slbl">미매칭</div></div></div><table class="tbl"><thead><tr><th>수취인</th><th>채널</th><th>옵션</th><th>송장번호</th></tr></thead><tbody>${rows}</tbody></table><p class="hint">업로드 파일이 자동 다운로드됩니다. 매칭된 채널의 파일만 생성됩니다.</p>`;
-}
+    // Miss alert
+    var missEl = document.getElementById('missAlert1');
+    if (missList.length > 0) {
+      missEl.textContent = '⚠️ 미매칭 ' + missList.length + '건: ' + missList.join(', ') + ' — 소낭 발주서에서 이름/전화번호를 확인하세요.';
+      showEl('missAlert1');
+    } else {
+      hideEl('missAlert1');
+    }
 
-let _sfChannel = '전체';
-function setSettleChannel(btn) {
-  _sfChannel = btn.dataset.ch;
-  document.querySelectorAll('.sf-ch-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderSettlement();
-}
-function resetSettleFilter() {
-  _sfChannel = '전체';
-  document.querySelectorAll('.sf-ch-btn').forEach(b=>b.classList.remove('active'));
-  const all = document.querySelector('.sf-ch-btn[data-ch="전체"]');
-  if(all) all.classList.add('active');
-  const el = (id)=>document.getElementById(id);
-  if(el('sf-opt')) el('sf-opt').value='';
-  if(el('sf-date-from')) el('sf-date-from').value='';
-  if(el('sf-date-to')) el('sf-date-to').value='';
-  if(el('sf-name')) el('sf-name').value='';
-  renderSettlement();
-}
-function renderSettlement() {
-  const s=S.settlement;
-  const el=(id)=>document.getElementById(id);
-  // 전체 요약 (필터 전)
-  if(!s.length){
-    el('settle-summary').innerHTML='<div class="sec"><div class="empty">정산 데이터가 없습니다<br><small>송장 처리 후 자동 생성됩니다</small></div></div>';
-    el('settle-table').innerHTML='';
-    if(el('settle-filter-stats')) el('settle-filter-stats').innerHTML='';
-    return;
-  }
-  const totRev=s.reduce((a,x)=>a+(x.salePrice||0),0);
-  const totProfit=s.reduce((a,x)=>a+(x.profit||0),0);
-  const avgMgn=totRev>0?(totProfit/totRev*100).toFixed(1):0;
-  const bdown=['쿠팡','스마트스토어','당근마켓'].map(ch=>{
-    const it=s.filter(x=>x.channel===ch); if(!it.length) return '';
-    return `<div class="sbox" style="border-left:4px solid ${CH_BG[ch]}"><div style="color:${CH_TX[ch]};font-weight:700;font-size:13px">${ch}</div><div class="snum" style="font-size:20px">${it.length}건</div><div class="slbl">매출 ${fmtPrice(it.reduce((a,x)=>a+(x.salePrice||0),0))}<br>순이익 <strong style="color:var(--ok)">${fmtPrice(it.reduce((a,x)=>a+(x.profit||0),0))}</strong></div></div>`;
-  }).join('');
-  el('settle-summary').innerHTML=`<div class="sec"><div class="srow"><div class="sbox"><div class="snum">${fmtPrice(totRev)}</div><div class="slbl">총 매출</div></div><div class="sbox ok"><div class="snum">${fmtPrice(totProfit)}</div><div class="slbl">총 순이익</div></div><div class="sbox"><div class="snum">${avgMgn}%</div><div class="slbl">평균 마진율</div></div><div class="sbox"><div class="snum">${s.length}건</div><div class="slbl">총 정산건수</div></div></div><div class="srow">${bdown}</div></div>`;
-  // 필터 적용
-  const fCh = _sfChannel||'전체';
-  const fOpt = el('sf-opt') ? el('sf-opt').value : '';
-  const fFrom = el('sf-date-from') ? el('sf-date-from').value : '';
-  const fTo = el('sf-date-to') ? el('sf-date-to').value : '';
-  const fName = el('sf-name') ? el('sf-name').value.trim() : '';
-  let filtered = s;
-  if(fCh !== '전체') filtered = filtered.filter(x=>x.channel===fCh);
-  if(fOpt) filtered = filtered.filter(x=>(x.option||x.size||'').includes(fOpt));
-  if(fFrom) filtered = filtered.filter(x=>x.orderDate >= fFrom);
-  if(fTo) filtered = filtered.filter(x=>x.orderDate <= fTo);
-  if(fName) filtered = filtered.filter(x=>(x.name||'').includes(fName));
-  // 필터 결과 미니 통계
-  const fRev=filtered.reduce((a,x)=>a+(x.salePrice||0),0);
-  const fProfit=filtered.reduce((a,x)=>a+(x.profit||0),0);
-  const fMgn=fRev>0?(fProfit/fRev*100).toFixed(1):0;
-  const isFiltered = fCh!=='전체'||fOpt||fFrom||fTo||fName;
-  if(el('settle-filter-stats')) {
-    el('settle-filter-stats').innerHTML = isFiltered
-      ? `<div class="filter-stat-bar">🔍 필터 결과 <strong>${filtered.length}건</strong> | 매출 <strong>${fmtPrice(fRev)}</strong> | 순이익 <strong style="color:var(--ok)">${fmtPrice(fProfit)}</strong> | 마진 <strong>${fMgn}%</strong></div>`
-      : '';
-  }
-  if(!filtered.length){
-    el('settle-table').innerHTML='<div class="empty" style="padding:24px">해당 조건의 정산 내역이 없습니다</div>';
-    return;
-  }
-  // 날짜별 그룹화 렌더링
-  const dates=[...new Set(filtered.map(x=>x.orderDate))].sort().reverse();
-  let html='';
-  dates.forEach(d=>{
-    const dayItems=filtered.filter(x=>x.orderDate===d);
-    const dayRev=dayItems.reduce((a,x)=>a+(x.salePrice||0),0);
-    const dayProfit=dayItems.reduce((a,x)=>a+(x.profit||0),0);
-    const clsOf=x=>x.channel==='쿠팡'?'cp':x.channel==='스마트스토어'?'ss':'dg';
-    html+=`<div class="day-group">
-      <div class="day-header">📅 ${d} <span class="day-meta">${dayItems.length}건 · 매출 ${fmtPrice(dayRev)} · 순이익 <strong style="color:var(--ok)">${fmtPrice(dayProfit)}</strong></span></div>
-      <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>#</th><th>수취인</th><th>옵션</th><th>채널</th><th>판매가</th><th>매입가</th><th>수수료</th><th>순이익</th><th>마진</th><th>송장번호</th></tr></thead>
-        <tbody>
-          ${dayItems.map((x,i)=>`<tr class="tr-${clsOf(x)}">
-            <td>${i+1}</td>
-            <td>${x.name}</td>
-            <td><span class="opt-badge">${x.option||x.size||'–'}</span></td>
-            <td>${chTag(x.channel)}</td>
-            <td class="num">${fmtPrice(x.salePrice)}</td>
-            <td class="num muted">${fmtPrice(x.costPrice)}</td>
-            <td class="num muted">${fmtPrice(x.fee)}</td>
-            <td class="num profit">${fmtPrice(x.profit)}</td>
-            <td class="num">${x.margin}%</td>
-            <td class="track-no">${x.trackingNo||'–'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+    showEl('result1');
+    showToast('✅ ' + matched + '/' + orders.length + '건 매칭 완료');
+
+  }).catch(function(err) {
+    showToast('❌ 오류: ' + err.message);
+    console.error(err);
   });
-  el('settle-table').innerHTML=html;
 }
 
-// =====================================================
-// ACTIONS
-// =====================================================
-function switchTab(tab, btn) {
-  ['orders','baljoo','tracking','settlement'].forEach(t=>{
-    const el=document.getElementById('tab-'+t);
-    if(el) el.classList.toggle('hidden',t!==tab);
+function downloadCoupangUpload() {
+  if (!state1.orders.length || !rawWb1) return;
+
+  var ws = rawWb1.Sheets[rawWb1.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+  var out = [rows[0]]; // keep original header row
+  state1.orders.forEach(function(o) {
+    if (!o.trk) return; // skip unmatched
+    var row = o.rawRow.slice();
+    row[3] = o.trk.carrier;   // 택배사 (0-indexed col 3)
+    row[4] = o.trk.trackNum;  // 운송장번호 (0-indexed col 4)
+    out.push(row);
   });
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+
+  var wb = XLSX.utils.book_new();
+  var outWs = XLSX.utils.aoa_to_sheet(out);
+  XLSX.utils.book_append_sheet(wb, outWs, '쿠팡송장업로드');
+  XLSX.writeFile(wb, '쿠팡송장업로드_' + todayStr() + '.xlsx');
+  showToast('✅ 쿠팡 송장 업로드파일 다운로드 완료!');
 }
 
-function filterOrders(f, btn) {
-  curFilter=f;
-  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderOrdersTable();
-}
+function downloadSSUpload() {
+  if (!state1.orders.length) return;
 
-function delOrder(id) {
-  if(!confirm('이 주문을 삭제하시겠습니까?')) return;
-  S.orders=S.orders.filter(o=>o.id!==id); saveState(); renderAll();
-}
-
-function clearOrders() {
-  if(!confirm('주문 목록을 초기화합니다.\n처리이력과 정산은 유지됩니다.')) return;
-  S.orders=[]; saveState(); renderAll(); showToast('주문 목록 초기화 완료');
-}
-
-function clearSettlement() {
-  if(!confirm('정산 데이터를 초기화합니다.')) return;
-  S.settlement=[]; saveState(); renderAll(); showToast('정산 초기화 완료');
-}
-
-function openManualEntry() {
-  const f=document.getElementById('form-dg'); f.reset();
-  f.querySelector('[name="orderDate"]').value=todayStr();
-  document.getElementById('modal-dg').classList.remove('hidden');
-}
-
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-function submitManualOrder(e) {
-  e.preventDefault();
-  const f=e.target;
-  const sz=f.option.value;
-  const sp=Number(f.salePrice.value)||SALE['당근마켓'][sz]||0;
-  const id=genId('당근마켓');
-  S.orders.push({
-    id, orderId:id, channel:'당근마켓',
-    orderDate:f.orderDate.value,
-    name:f.name.value.trim(), phone:normPhone(f.phone.value),
-    zipcode:f.zipcode.value.trim(), address:f.address.value.trim(),
-    option:`흙당근 ${sz}`, size:sz, qty:1,
-    deliveryMsg:f.deliveryMsg.value.trim(),
-    salePrice:sp, costPrice:SUPPLY[sz]||0,
-    status:'pending', trackingNo:'', courier:'',
-    rawRow:null, rawHeaders:null, rawCol:null
+  var out = [['상품주문번호', '배송방법', '택배사', '송장번호']];
+  state1.orders.forEach(function(o) {
+    if (!o.trk) return;
+    out.push([o.orderId, '택배', o.trk.carrier, o.trk.trackNum]);
   });
-  saveState(); renderAll(); closeModal('modal-dg');
-  showToast(`✅ 당근마켓 주문 추가: ${f.name.value} (${sz})`);
+
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(out);
+  XLSX.utils.book_append_sheet(wb, ws, '스마트스토어송장업로드');
+  XLSX.writeFile(wb, '스마트스토어송장업로드_' + todayStr() + '.xlsx');
+  showToast('✅ 스마트스토어 송장 업로드파일 다운로드 완료!');
 }
 
-function openSettings() {
-  document.getElementById('gas-url').value=S.cfg.gasUrl||'';
-  const hasGas=!!S.cfg.gasUrl;
-  document.getElementById('btn-sync-from').style.display=hasGas?'inline-flex':'none';
-  document.getElementById('btn-sync-to').style.display=hasGas?'inline-flex':'none';
-  document.getElementById('modal-cfg').classList.remove('hidden');
+/* ============================================================
+   TAB 2: 정산
+   ============================================================ */
+function runSettlement() {
+  if (!_file2a || !_file2b) return;
+
+  Promise.all([readXlsx(_file2a), readXlsx(_file2b)]).then(function(results) {
+    var delWb = results[0];
+    var trkWb = results[1];
+
+    var parsed = parseDelivery(delWb, _file2a.name);
+    var platform = parsed.platform;
+    var orders   = parsed.orders;
+    var trkMap   = parseTrk(trkWb);
+
+    if (orders.length === 0) { showToast('❌ 주문 데이터가 없습니다.'); return; }
+
+    var feeRate = FEE_RT[platform] || 0.108;
+    var rows = [];
+    var totalSales = 0, totalSupply = 0, totalFee = 0, totalProfit = 0;
+
+    orders.forEach(function(o) {
+      var trk = findTrk(trkMap, o);
+      if (!trk) return; // only settled/shipped orders
+
+      var sz     = extractSize(o.option);
+      var supply = (SUPPLY[sz] || 0) * o.qty;
+      var fee    = Math.round(o.payment * feeRate);
+      var profit = o.payment - supply - fee;
+      var margin = o.payment > 0 ? (profit / o.payment * 100) : 0;
+
+      totalSales  += o.payment;
+      totalSupply += supply;
+      totalFee    += fee;
+      totalProfit += profit;
+
+      rows.push(Object.assign({}, o, { sz: sz, supply: supply, fee: fee, profit: profit, margin: margin, trk: trk }));
+    });
+
+    state2 = { rows: rows, platform: platform };
+
+    var totalMargin = totalSales > 0 ? (totalProfit / totalSales * 100) : 0;
+
+    document.getElementById('s2total').textContent  = rows.length;
+    document.getElementById('s2sales').textContent  = comma(totalSales) + '원';
+    document.getElementById('s2supply').textContent = comma(totalSupply) + '원';
+    document.getElementById('s2fee').textContent    = comma(totalFee) + '원';
+    document.getElementById('s2profit').textContent = comma(totalProfit) + '원';
+    document.getElementById('s2margin').textContent = totalMargin.toFixed(1) + '%';
+
+    var tbody = document.getElementById('tbody2');
+    tbody.innerHTML = '';
+    rows.forEach(function(r, idx) {
+      var pCls = r.profit >= 0 ? 'profit-positive' : 'profit-negative';
+      var optLabel = r.option + (r.qty > 1 ? ' ×' + r.qty : '');
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + (idx+1) + '</td>' +
+        '<td>' + r.name + '</td>' +
+        '<td><span class="badge ' + (r.platform === '쿠팡' ? 'badge-cp' : 'badge-ss') + '">' + r.platform + '</span></td>' +
+        '<td>' + optLabel + '</td>' +
+        '<td>' + r.qty + '</td>' +
+        '<td>' + comma(r.payment) + '원</td>' +
+        '<td>' + comma(r.supply) + '원</td>' +
+        '<td>' + comma(r.fee) + '원</td>' +
+        '<td class="' + pCls + '">' + comma(r.profit) + '원</td>' +
+        '<td>' + r.margin.toFixed(1) + '%</td>';
+      tbody.appendChild(tr);
+    });
+
+    showEl('result2');
+    showToast('✅ ' + rows.length + '건 정산 완료 (순이익 ' + comma(totalProfit) + '원)');
+
+  }).catch(function(err) {
+    showToast('❌ 오류: ' + err.message);
+    console.error(err);
+  });
 }
 
-async function saveSettings() {
-  S.cfg.gasUrl=document.getElementById('gas-url').value.trim();
-  saveState(); closeModal('modal-cfg'); showToast('✅ 설정 저장 완료');
+function downloadSettlement() {
+  if (!state2.rows.length) return;
+
+  var HDR = ['번호','받는사람','전화번호','채널','주문일','옵션','수량','판매가','매입비','수수료','순이익','마진율(%)'];
+  var aoa = [HDR];
+
+  state2.rows.forEach(function(r, idx) {
+    aoa.push([
+      idx + 1,
+      r.name,
+      formatPhone(r.phone),
+      r.platform,
+      r.orderDate || '',
+      r.option,
+      r.qty,
+      r.payment,
+      r.supply,
+      r.fee,
+      r.profit,
+      parseFloat(r.margin.toFixed(1))
+    ]);
+  });
+
+  // Totals row
+  var tSales  = state2.rows.reduce(function(s,r){ return s + r.payment; }, 0);
+  var tSupply = state2.rows.reduce(function(s,r){ return s + r.supply;  }, 0);
+  var tFee    = state2.rows.reduce(function(s,r){ return s + r.fee;     }, 0);
+  var tProfit = state2.rows.reduce(function(s,r){ return s + r.profit;  }, 0);
+  var tMargin = tSales > 0 ? tProfit / tSales * 100 : 0;
+  aoa.push(['합계','','','','','','', tSales, tSupply, tFee, tProfit, parseFloat(tMargin.toFixed(1))]);
+
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [
+    {wch:5},{wch:10},{wch:14},{wch:12},{wch:12},
+    {wch:16},{wch:5},{wch:10},{wch:10},{wch:10},{wch:10},{wch:9}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, '정산');
+  XLSX.writeFile(wb, '당근_정산_' + todayStr() + '.xlsx');
+  showToast('✅ 정산 파일 다운로드 완료!');
 }
 
-// GAS Sync
-async function syncToGAS() {
-  if(!S.cfg.gasUrl){ showToast('GAS URL을 먼저 설정하세요'); return; }
-  clearTimeout(_autoSyncTimer);
-  document.getElementById('sync-status').textContent='저장 중...';
-  await autoSyncToGAS();
-  document.getElementById('sync-status').textContent='✅ 저장 완료';
-  showToast('☁️ 구글시트 저장 완료!');
+/* ============================================================
+   DRAG & DROP
+   ============================================================ */
+function setupDrop(areaId, inputId, onChangeFn) {
+  var area = document.getElementById(areaId);
+  area.addEventListener('dragover', function(e) { e.preventDefault(); area.style.borderColor = '#ff6b35'; });
+  area.addEventListener('dragleave', function() { area.style.borderColor = ''; });
+  area.addEventListener('drop', function(e) {
+    e.preventDefault();
+    area.style.borderColor = '';
+    var f = e.dataTransfer.files[0];
+    if (f) {
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(f);
+        document.getElementById(inputId).files = dt.files;
+        onChangeFn(document.getElementById(inputId));
+      } catch(ex) {
+        // DataTransfer not supported in some browsers — fallback: just call handler with file
+        var fakeInp = { files: [f] };
+        onChangeFn(fakeInp);
+      }
+    }
+  });
 }
 
-async function syncFromGAS() {
-  if(!S.cfg.gasUrl){ showToast('GAS URL을 먼저 설정하세요'); return; }
-  try {
-    document.getElementById('sync-status').textContent='불러오는 중...';
-    const r=await fetch(S.cfg.gasUrl+'?action=getAll');
-    const d=await r.json();
-    if(d.orders){ S.orders=d.orders; S.history=d.history||S.history; S.settlement=d.settlement||S.settlement; saveState(); renderAll(); document.getElementById('sync-status').textContent='✅ 불러오기 완료'; }
-    else document.getElementById('sync-status').textContent='❌ 오류: '+(d.error||'');
-  } catch(e){ document.getElementById('sync-status').textContent='❌ 연결 실패: '+e.message; }
-}
-
-// Drag & Drop
-function setupDrop(zoneId, handler) {
-  const z=document.getElementById(zoneId);
-  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over');});
-  z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
-  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');handler(e.dataTransfer.files);});
-}
-
-// Toast
-let _tt;
-function showToast(msg) {
-  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// INIT
-document.addEventListener('DOMContentLoaded',()=>{
-  loadState();
-  setupDrop('dz-orders', handleOrderFiles);
-  setupDrop('dz-tracking', files=>{ if(files[0]) handleTrackingFile(files[0]); });
-  renderAll();
-});
+setupDrop('drop0',  'file0',  onFile0);
+setupDrop('drop1a', 'file1a', onFile1a);
+setupDrop('drop1b', 'file1b', onFile1b);
+setupDrop('drop2a', 'file2a', onFile2a);
+setupDrop('drop2b', 'file2b', onFile2b);
 </script>
 </body>
 </html>
