@@ -315,7 +315,7 @@ let gasTimer=null;
 ====================================================== */
 const normPhone=p=>String(p||'').replace(/[^0-9]/g,'');
 const extractSize=opt=>{const m=String(opt||'').match(/(\d+)\s*kg/i);return m?m[1]+'kg':null;};
-const todayYMD=()=>new Date().toISOString().slice(0,10);
+const todayYMD=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const todayMMDD=()=>todayYMD().replace(/-/g,'').slice(4);
 const comma=n=>Math.round(n).toLocaleString('ko-KR');
 const fmtPhone=p=>{const d=String(p||'');if(d.length===11)return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);if(d.length===10)return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);return d;};
