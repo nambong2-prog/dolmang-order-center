@@ -364,7 +364,7 @@ function downloadBaljoo(){
   const aoa=[HDR];
   orders0.forEach(o=>{
     const sz=extractSize(o.option)||'2kg';
-    const qa=sz==='2kg'?o.qty:0,qb=sz==='3kg'?o.qty:0,qc=sz==='5kg'?o.qty:0;
+    const qa=o.qty,qb=0,qc=0;
     aoa.push([SENDER.name,SENDER.zip,SENDER.addr,SENDER.phone,'',
       o.name,o.zip,o.addr,o.phone,'',qa,qb,qc,3,
       `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${sz} ${o.qty}개)`,
