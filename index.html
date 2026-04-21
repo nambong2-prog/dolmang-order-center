@@ -621,11 +621,29 @@ function runTracking(){
     show('result1');toast('✅ '+matched+'/'+src.length+'건 매칭 완료');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
+const DL_HEADER=['번호','묶음배송번호','주문번호','택배사','운송장번호','분리배송 Y/N','분리배송 출고예정일','주문시 출고예정일','출고일(발송일)','주문일','등록상품명','등록옵션명','노출상품명(옵션명)','노출상품ID','옵션ID','최초등록등록상품명/옵션명','업체상품코드','바코드','결제액','배송비구분','배송비','도서산간 추가배송비','구매수(수량)','옵션판매가(판매단가)','구매자','구매자전화번호','수취인이름','수취인전화번호','우편번호','수취인 주소','배송메세지','상품별 추가메시지','주문자 추가메시지','배송완료일','구매확정일자','개인통관번호(PCCC)','통관용수취인전화번호','기타','결제위치','배송유형'];
+function buildDLRow(o,seq){
+  const row=new Array(40).fill('');
+  row[0]=seq;
+  row[2]=o.orderId;
+  row[3]=o.trk.carrier;
+  row[4]=String(o.trk.trackNum);
+  row[9]=o.orderDate||todayYMD();
+  row[11]=o.option;
+  row[18]=o.payment;
+  row[22]=o.qty;
+  row[26]=o.name;
+  row[27]=fmtPhone(o.phone);
+  row[28]=o.zip;
+  row[29]=o.addr;
+  row[30]=o.msg;
+  return row;
+}
 function downloadCoupangUpload(){
   if(!orders1.length)return;
   const wb=XLSX.utils.book_new();
   if(rawWb1){
-    // 원본 DeliveryList 있음: 기존 방식 (전체 행 구조 유지)
+    // 원본 DeliveryList 있음: 기존 행 구조 유지 (모든 컬럼 보존)
     const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     const out=[rows[0]];
@@ -633,10 +651,11 @@ function downloadCoupangUpload(){
     const origSheetName=rawWb1.SheetNames[0]||'Delivery';
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),origSheetName);
   }else{
-    // 원본 없음 (구글시트 발주 사용): 최소 형식
-    const aoa=[['주문번호','택배사코드','운송장번호']];
-    orders1.forEach(o=>{if(!o.trk)return;aoa.push([o.orderId,o.trk.carrier,o.trk.trackNum]);});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'쿠팡송장업로드');
+    // 구글시트 데이터: 40컬럼 DeliveryList 형식으로 재구성
+    const out=[DL_HEADER];
+    let seq=1;
+    orders1.forEach(o=>{if(!o.trk)return;out.push(buildDLRow(o,seq++));});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'Delivery');
   }
   XLSX.writeFile(wb,'쿠팡송장업로드_'+todayYMD().replace(/-/g,'')+'.xlsx');
   toast('✅ 쿠팡 대량업로드 파일 다운로드!');
