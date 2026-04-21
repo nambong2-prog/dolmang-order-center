@@ -629,8 +629,9 @@ function downloadCoupangUpload(){
     const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     const out=[rows[0]];
-    orders1.forEach(o=>{if(!o.trk)return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=o.trk.trackNum;out.push(row);});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'쿠팡송장업로드');
+    orders1.forEach(o=>{if(!o.trk)return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);});
+    const origSheetName=rawWb1.SheetNames[0]||'Delivery';
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),origSheetName);
   }else{
     // 원본 없음 (구글시트 발주 사용): 최소 형식
     const aoa=[['주문번호','택배사코드','운송장번호']];
