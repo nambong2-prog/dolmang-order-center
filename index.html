@@ -61,6 +61,7 @@ tr.editing td{background:#fffde7!important}
 .badge-ss{background:#e0f0ff;color:#0066cc}
 .badge-ok{background:#e0ffe0;color:#1a8a1a}
 .badge-miss{background:#ffe0e0;color:#cc0000}
+.badge-bj{background:#f0e8ff;color:#7b1fa2}
 .alert{padding:11px 15px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.6}
 .alert-info{background:#e8f4fd;color:#1a6fa8;border-left:4px solid #2196f3}
 .alert-warn{background:#fff8e1;color:#8a6000;border-left:4px solid #ffc107}
@@ -117,6 +118,49 @@ tr.editing td{background:#fffde7!important}
       <div class="filename" id="fname0"></div>
     </div>
   </div>
+
+  <div class="card" id="manualCard">
+    <h2>📞 발주방 주문 직접 입력 <span style="color:#888;font-size:13px;font-weight:400">— 전화·카톡 주문을 발주서에 추가</span></h2>
+    <div class="alert alert-warn" style="margin-bottom:14px">발주방 주문은 쿠팡 업로드 파일에 포함되지 않습니다. 정산 수수료 0% 적용.</div>
+    <div class="two-col">
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">받는사람 *</label>
+        <input class="filter-input" id="mName" placeholder="홍길동" style="width:100%;margin-bottom:10px">
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">전화번호 *</label>
+        <input class="filter-input" id="mPhone" placeholder="010-0000-0000" style="width:100%;margin-bottom:10px">
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">우편번호</label>
+        <input class="filter-input" id="mZip" placeholder="12345" style="width:100%;margin-bottom:10px">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">주소 *</label>
+        <input class="filter-input" id="mAddr" placeholder="제주시 어딘가로 123" style="width:100%;margin-bottom:10px">
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">배송메시지</label>
+        <input class="filter-input" id="mMsg" placeholder="문앞에 놔주세요" style="width:100%;margin-bottom:10px">
+        <div style="display:flex;gap:8px">
+          <div style="flex:1">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">옵션 *</label>
+            <select class="filter-select" id="mOption" style="width:100%">
+              <option value="1개 2kg">2kg</option>
+              <option value="1개 3kg">3kg</option>
+              <option value="1개 5kg">5kg</option>
+            </select>
+          </div>
+          <div style="width:70px">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">수량</label>
+            <input class="filter-input" id="mQty" type="number" value="1" min="1" style="width:100%">
+          </div>
+          <div style="width:100px">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">판매금액</label>
+            <input class="filter-input" id="mPrice" type="number" placeholder="자동" style="width:100%">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="addManualOrder()">➕ 발주서에 추가</button>
+    </div>
+  </div>
+
   <div id="preview0" class="hidden">
     <div class="card">
       <h2>📋 발주서 미리보기 <span style="color:#888;font-size:13px;font-weight:400">— ✕ 클릭으로 제외 후 발주서 생성</span></h2>
@@ -247,6 +291,7 @@ tr.editing td{background:#fffde7!important}
         <option value="">전체</option>
         <option value="쿠팡">쿠팡</option>
         <option value="스마트스토어">스마트스토어</option>
+        <option value="발주방">발주방</option>
       </select>
       <label>옵션</label>
       <select class="filter-select" id="fOption" onchange="applyFilter()">
@@ -287,7 +332,7 @@ tr.editing td{background:#fffde7!important}
    CONSTANTS & CONFIG
 ====================================================== */
 const SUPPLY={'2kg':12000,'3kg':15000,'5kg':21000};
-const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055};
+const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055,'발주방':0};
 const SENDER={name:'돌망돌망',zip:'',addr:'제주특별자치도 서귀포시 표선면 서성일로 89',phone:'010-2272-3645'};
 const SK='dolmang_settle_v2';
 const GAS_URL='https://script.google.com/macros/s/AKfycbwE00neE8Yx0pf-iBf4SdL476ixrdCd9B5-LaxZE2LtgAr7Utr_mOEkqjlRT4CGO8Rg/exec';
@@ -521,8 +566,13 @@ function onFile0(inp){
   readXlsx(_f0).then(wb=>{
     rawWb0=wb;
     const{platform,orders}=parseDelivery(wb,_f0.name);
-    orders0=orders;renderPreview0();show('preview0');
-    toast('✅ '+orders.length+'건 파싱 완료 ('+platform+')');
+    // 기존 발주방 주문은 보존하고 새 주문 합치기
+    const existingBJ=orders0.filter(o=>o.platform==='발주방');
+    const newIds=new Set(orders.map(o=>o.orderId));
+    orders0=[...existingBJ.filter(o=>!newIds.has(o.orderId)),...orders];
+    renderPreview0();show('preview0');
+    const bjCount=existingBJ.length;
+    toast('✅ '+orders.length+'건 파싱 완료 ('+platform+')'+(bjCount?' + 발주방 '+bjCount+'건 유지':''));
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
 function renderPreview0(){
@@ -545,6 +595,39 @@ function renderPreview0(){
     tbody.appendChild(tr);
   });
 }
+
+function addManualOrder(){
+  const name=document.getElementById('mName').value.trim();
+  const phone=document.getElementById('mPhone').value.trim();
+  const addr=document.getElementById('mAddr').value.trim();
+  if(!name||!phone||!addr){toast('❌ 받는사람, 전화번호, 주소는 필수입니다.');return;}
+  const option=document.getElementById('mOption').value;
+  const qty=parseInt(document.getElementById('mQty').value)||1;
+  const sz=extractSize(option)||'3kg';
+  const defaultPrice={'2kg':15900,'3kg':19900,'5kg':27900};
+  const rawPrice=document.getElementById('mPrice').value;
+  const salePrice=rawPrice?parseInt(rawPrice):(defaultPrice[sz]||19900);
+  const order={
+    orderId:'BJ_'+Date.now(),
+    platform:'발주방',
+    name,phone,
+    zip:document.getElementById('mZip').value.trim(),
+    addr,
+    msg:document.getElementById('mMsg').value.trim(),
+    option,qty,
+    payment:salePrice,
+    orderDate:todayYMD(),
+    rawRow:null
+  };
+  orders0.push(order);
+  renderPreview0();
+  show('preview0');
+  // 입력 초기화
+  ['mName','mPhone','mZip','mAddr','mMsg','mPrice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mQty').value='1';
+  toast('✅ '+name+' 발주방 주문 추가됨');
+}
+
 function delRow0(i){orders0.splice(i,1);renderPreview0();}
 function downloadBaljoo(){
   if(!orders0.length){toast('❌ 발주할 주문이 없습니다.');return;}
@@ -647,14 +730,14 @@ function downloadCoupangUpload(){
     const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     const out=[rows[0]];
-    orders1.forEach(o=>{if(!o.trk)return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);});
+    orders1.forEach(o=>{if(!o.trk||o.platform==='발주방')return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);});
     const origSheetName=rawWb1.SheetNames[0]||'Delivery';
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),origSheetName);
   }else{
     // 구글시트 데이터: 40컬럼 DeliveryList 형식으로 재구성
     const out=[DL_HEADER];
     let seq=1;
-    orders1.forEach(o=>{if(!o.trk)return;out.push(buildDLRow(o,seq++));});
+    orders1.forEach(o=>{if(!o.trk||o.platform==='발주방')return;out.push(buildDLRow(o,seq++));});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'Delivery');
   }
   XLSX.writeFile(wb,'쿠팡송장업로드_'+todayYMD().replace(/-/g,'')+'.xlsx');
@@ -667,10 +750,10 @@ function downloadCoupangUpload(){
 function addToSettlement(){
   if(!orders1.length)return;
   const data=loadS();const ids=new Set(data.map(r=>r.orderId));
-  const platform=orders1[0]?.platform||'쿠팡';const feeR=FEE_RT[platform]||0.108;
   let added=0;
   orders1.forEach(o=>{
     if(!o.trk||ids.has(o.orderId))return;
+    const feeR=FEE_RT[o.platform]??0.108;  // 주문별 플랫폼 수수료
     const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
     const fee=Math.round(o.payment*feeR);const profit=o.payment-cost-fee;
     const margin=o.payment>0?profit/o.payment*100:0;
@@ -693,7 +776,7 @@ function onFileHist(inp){
   readXlsx(f).then(wb=>{
     const{platform,orders}=parseDelivery(wb,f.name);
     const data=loadS();const ids=new Set(data.map(r=>r.orderId));
-    const feeR=FEE_RT[platform]||0.108;let added=0;
+    const feeR=FEE_RT[platform]??0.108;let added=0;
     orders.forEach(o=>{
       if(ids.has(o.orderId))return;
       const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
@@ -762,7 +845,7 @@ function renderSettle(){
     const tr=document.createElement('tr');
     tr.id='sr_'+r.orderId;
     tr.innerHTML=`<td>${i+1}</td><td>${esc(normDate(r.date))}</td><td>${esc(r.name)}</td>
-      <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
+      <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':r.platform==='발주방'?'badge-bj':'badge-ss'}">${esc(r.platform)}</span></td>
       <td>${esc(r.option)}</td><td>${r.qty}</td>
       <td>${comma(r.salePrice)}원</td><td>${comma(r.costPrice)}원</td><td>${comma(r.commission)}원</td>
       <td class="${pc}">${comma(r.profit)}원</td><td>${Number(r.margin).toFixed(1)}%</td>
@@ -775,13 +858,13 @@ function renderSettle(){
   });
 }
 function editSettle(oid){
-  const data=loadS();const r=data.find(x=>x.orderId===oid);if(!r)return;
+  const data=loadS();const r=data.find(x=>String(x.orderId)===String(oid));if(!r)return;
   const tr=document.getElementById('sr_'+oid);if(!tr)return;
   tr.classList.add('editing');
   tr.innerHTML=`<td>✏️</td>
     <td><input class="edit-input" id="ei_date" value="${esc(normDate(r.date))}" style="width:100px"></td>
     <td><input class="edit-input" id="ei_name" value="${esc(r.name)}"></td>
-    <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':'badge-ss'}">${esc(r.platform)}</span></td>
+    <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':r.platform==='발주방'?'badge-bj':'badge-ss'}">${esc(r.platform)}</span></td>
     <td><input class="edit-input" id="ei_opt" value="${esc(r.option)}" style="width:65px"></td>
     <td><input class="edit-input" id="ei_qty" value="${r.qty}" type="number" style="width:44px"></td>
     <td><input class="edit-input" id="ei_sale" value="${r.salePrice}" type="number" style="width:72px"></td>
@@ -795,7 +878,7 @@ function editSettle(oid){
     </td>`;
 }
 function confirmEdit(oid){
-  const data=loadS();const idx=data.findIndex(x=>x.orderId===oid);if(idx<0)return;
+  const data=loadS();const idx=data.findIndex(x=>String(x.orderId)===String(oid));if(idx<0)return;
   const r=data[idx];
   const g=id=>document.getElementById('ei_'+id);
   const sale=Number(g('sale').value)||r.salePrice;
@@ -811,7 +894,7 @@ function confirmEdit(oid){
 }
 function delSettle(oid){
   if(!confirm('이 항목을 삭제하시겠습니까?'))return;
-  const data=loadS().filter(r=>r.orderId!==oid);
+  const data=loadS().filter(r=>String(r.orderId)!==String(oid));
   saveS(data);renderSettle();toast('삭제됨');
 }
 function clearSettlement(){
