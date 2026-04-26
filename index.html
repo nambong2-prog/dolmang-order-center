@@ -110,11 +110,11 @@ tr.editing td{background:#fffde7!important}
 <div id="tab0" class="tab-content active">
   <div class="card">
     <h2>📦 소낭 발주서 생성</h2>
-    <div class="alert alert-info">쿠팡 DeliveryList를 업로드하면 소낭친환경 발주 양식으로 변환합니다. 미리보기에서 ✕로 제외할 주문을 삭제한 후 발주서를 생성하세요.</div>
+    <div class="alert alert-info">쿠팡 DeliveryList · 스마트스토어 주문확인서 · 당근마켓 주문내역을 업로드하면 소낭친환경 발주 양식으로 자동 변환합니다. 미리보기에서 ✕로 제외할 주문을 삭제한 후 발주서를 생성하세요.</div>
     <div class="file-area" id="drop0">
       <input type="file" id="file0" accept=".xlsx,.xls" onchange="onFile0(this)">
       <div class="icon">📂</div>
-      <div class="label">쿠팡 DeliveryList 업로드<br><small>클릭 또는 드래그</small></div>
+      <div class="label">쿠팡 DeliveryList / 스마트스토어 / 당근마켓 주문파일 업로드<br><small>클릭 또는 드래그 — 플랫폼 자동 감지</small></div>
       <div class="filename" id="fname0"></div>
     </div>
   </div>
@@ -175,7 +175,7 @@ tr.editing td{background:#fffde7!important}
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>제외</th><th>#</th><th>받는사람</th><th>전화번호</th><th>옵션</th><th>수량</th><th>주소</th><th>배송메시지</th><th>주문번호</th></tr></thead>
+          <thead><tr><th>제외</th><th>#</th><th>채널</th><th>받는사람</th><th>전화번호</th><th>옵션</th><th>수량</th><th>주소</th><th>배송메시지</th><th>주문번호</th></tr></thead>
           <tbody id="tbody0"></tbody>
         </table>
       </div>
@@ -186,9 +186,11 @@ tr.editing td{background:#fffde7!important}
 <!-- TAB 1: 송장 처리 -->
 <div id="tab1" class="tab-content">
   <div class="card">
-    <h2>🚚 쿠팡 대량업로드 파일 생성</h2>
+    <h2>🚚 송장 처리 / 업로드 파일 생성</h2>
     <div class="alert alert-info">
-      소낭에서 받은 송장번호 입력된 발주서를 업로드하면 쿠팡 대량업로드 파일이 생성됩니다.<br>
+      소낭에서 받은 송장번호 입력된 발주서를 업로드하면 플랫폼별 업로드 파일이 생성됩니다.<br>
+      ▸ <b>쿠팡</b>: 쿠팡 대량업로드 파일 (.xlsx) 다운로드<br>
+      ▸ <b>당근마켓</b>: 당근마켓 운송장 등록용 파일 (.xlsx) 다운로드 — 당근 앱 &gt; 판매관리 &gt; 운송장 일괄등록에서 업로드<br>
       <small>💡 발주서탭에서 파일을 이미 로드한 경우 원본 주문파일 재업로드 불필요. 이름+전화번호로 자동 매칭합니다.</small>
     </div>
     <div id="t1OrdOk" class="alert alert-success hidden">✅ 발주서탭 주문파일 로드됨 — 송장파일만 업로드하면 됩니다.</div>
@@ -201,11 +203,11 @@ tr.editing td{background:#fffde7!important}
       <button class="btn btn-cloud" onclick="loadOrdersFromGAS()" id="btnGasLoad">☁️ 구글시트에서 발주 불러오기</button>
     </div>
     <div id="t1OrdUpload">
-      <h3><span class="step-num">1</span> 원본 쿠팡 주문파일 (DeliveryList)</h3>
+      <h3><span class="step-num">1</span> 원본 주문파일 (쿠팡 DeliveryList / 스마트스토어 / 당근마켓)</h3>
       <div class="file-area" id="drop1a">
         <input type="file" id="file1a" accept=".xlsx,.xls" onchange="onFile1a(this)">
         <div class="icon">📂</div>
-        <div class="label">쿠팡 DeliveryList</div>
+        <div class="label">쿠팡 DeliveryList / 스마트스토어 / 당근마켓 주문파일</div>
         <div class="filename" id="fname1a"></div>
       </div>
     </div>
@@ -232,6 +234,7 @@ tr.editing td{background:#fffde7!important}
       </div>
       <div class="btn-row">
         <button class="btn btn-success" onclick="downloadCoupangUpload()">⬇️ 쿠팡 대량업로드 파일</button>
+        <button class="btn btn-success" onclick="downloadDaangnUpload()" style="background:#FF6F00">🥕 당근마켓 운송장 등록 파일</button>
         <button class="btn btn-outline" onclick="addToSettlement()">💰 정산에 추가</button>
       </div>
       <div id="missAlert1" class="hidden alert alert-warn" style="margin-top:10px"></div>
@@ -292,6 +295,7 @@ tr.editing td{background:#fffde7!important}
         <option value="쿠팡">쿠팡</option>
         <option value="스마트스토어">스마트스토어</option>
         <option value="발주방">발주방</option>
+        <option value="당근마켓">🥕 당근마켓</option>
       </select>
       <label>옵션</label>
       <select class="filter-select" id="fOption" onchange="applyFilter()">
@@ -332,7 +336,7 @@ tr.editing td{background:#fffde7!important}
    CONSTANTS & CONFIG
 ====================================================== */
 const SUPPLY={'2kg':12000,'3kg':15000,'5kg':21000};
-const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055,'발주방':0};
+const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055,'발주방':0,'당근마켓':0};
 const SENDER={name:'돌망돌망',zip:'',addr:'제주특별자치도 서귀포시 표선면 서성일로 89',phone:'010-2272-3645'};
 const SK='dolmang_settle_v2';
 const GAS_URL='https://script.google.com/macros/s/AKfycbwE00neE8Yx0pf-iBf4SdL476ixrdCd9B5-LaxZE2LtgAr7Utr_mOEkqjlRT4CGO8Rg/exec';
@@ -343,7 +347,7 @@ const SEED=[{"orderId":"25100183940006","date":"2026-04-12","name":"전유진","
 /* ======================================================
    STATE
 ====================================================== */
-let orders0=[], rawWb0=null;
+let orders0=[], rawWb0s={};  // rawWb0s: {platform: wb} — 플랫폼별 원본 wb
 let orders1=[], rawWb1=null;
 let gasLoadedOrders=[];
 let gasTimer=null;
@@ -497,7 +501,21 @@ function setLabel(aId,fId,name){
 function detectPlatform(headers,filename){
   if(String(filename||'').toLowerCase().includes('deliverylist'))return '쿠팡';
   if(headers.some(h=>String(h).includes('상품주문번호')))return '스마트스토어';
+  if(headers.some(h=>String(h).includes('당근 닉네임'))||headers.some(h=>String(h).includes('당근닉네임')))return '당근마켓';
+  if(String(filename||'').includes('당근')&&headers.some(h=>String(h).includes('수령방식')))return '당근마켓';
   return '쿠팡';
+}
+
+/* 당근마켓 상품명에서 옵션/수량 파싱
+   예: "제주 유기농 흙당근 2kg 산지직송/3kg 혼합 1개" → {option:'3kg', qty:1} */
+function parseDaangnProduct(productName){
+  const parts=String(productName||'').split('/');
+  const optPart=parts.length>1?parts[parts.length-1]:productName;
+  const kgM=optPart.match(/(\d+)\s*kg/i);
+  const qtyM=optPart.match(/(\d+)\s*개/);
+  const option=kgM?kgM[1]+'kg':'3kg';
+  const qty=qtyM?parseInt(qtyM[1]):1;
+  return{option,qty};
 }
 function parseDelivery(wb,filename){
   const ws=wb.Sheets[wb.SheetNames[0]];
@@ -516,6 +534,25 @@ function parseDelivery(wb,filename){
         payment:Number(r[18])||0,qty:Number(r[22])||1,
         name:String(r[26]||'').trim(),phone:normPhone(r[27]),
         zip:String(r[28]||'').trim(),addr:String(r[29]||'').trim(),msg:String(r[30]||'').trim()});
+    }
+  }else if(platform==='당근마켓'){
+    /* 당근마켓 컬럼: [0]주문번호 [1]택배사 [2]운송장번호 [3]주문일시 [4]수령방식
+       [5]상품명 [6]가격 [7]당근닉네임 [8]주문자명 [9]연락처
+       [10]우편번호 [11]배송주소 [12]요청사항 [13]현관출입방법 */
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];
+      const orderId=String(r[0]||'').trim();
+      if(!orderId)continue;
+      const{option,qty}=parseDaangnProduct(String(r[5]||''));
+      const req=String(r[12]||'').trim();
+      const door=String(r[13]||'').trim();
+      const msg=[req,door].filter(Boolean).join(' / ');
+      orders.push({rowIdx:i,rawRow:r.slice(),platform:'당근마켓',orderId,
+        orderDate:String(r[3]||'').slice(0,10),
+        option,payment:Number(String(r[6]||'').replace(/[^0-9]/g,''))||0,qty,
+        name:String(r[8]||'').trim(),phone:normPhone(r[9]),
+        zip:String(r[10]||'').trim(),addr:String(r[11]||'').trim(),msg,
+        nickname:String(r[7]||'').trim()});
     }
   }else{
     const hIdx=n=>headers.findIndex(h=>h.includes(n));
@@ -564,15 +601,18 @@ function onFile0(inp){
   _f0=inp.files[0];if(!_f0)return;
   setLabel('drop0','fname0',_f0.name);
   readXlsx(_f0).then(wb=>{
-    rawWb0=wb;
     const{platform,orders}=parseDelivery(wb,_f0.name);
-    // 기존 발주방 주문은 보존하고 새 주문 합치기
-    const existingBJ=orders0.filter(o=>o.platform==='발주방');
+    rawWb0s[platform]=wb;  // 플랫폼별 원본 wb 저장 (쿠팡 업로드 포맷 보존용)
+    // 같은 플랫폼 주문만 교체, 다른 플랫폼 주문은 그대로 유지
     const newIds=new Set(orders.map(o=>o.orderId));
-    orders0=[...existingBJ.filter(o=>!newIds.has(o.orderId)),...orders];
+    const keepOthers=orders0.filter(o=>o.platform!==platform);
+    orders0=[...keepOthers,...orders];
     renderPreview0();show('preview0');
-    const bjCount=existingBJ.length;
-    toast('✅ '+orders.length+'건 파싱 완료 ('+platform+')'+(bjCount?' + 발주방 '+bjCount+'건 유지':''));
+    // 플랫폼별 합계 표시
+    const summary=Object.entries(
+      orders0.reduce((a,o)=>{a[o.platform]=(a[o.platform]||0)+1;return a;},{})
+    ).map(([p,n])=>p+' '+n+'건').join(' + ');
+    toast('✅ '+platform+' '+orders.length+'건 로드 → 전체 '+orders0.length+'건 ('+summary+')');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
 function renderPreview0(){
@@ -583,12 +623,15 @@ function renderPreview0(){
   document.getElementById('b03kg').textContent=c3;
   document.getElementById('b05kg').textContent=c5;
   const tbody=document.getElementById('tbody0');tbody.innerHTML='';
+  const platColor={'쿠팡':'#e8002d','스마트스토어':'#03c75a','발주방':'#5f4bb6','당근마켓':'#FF6F00'};
   orders0.forEach((o,i)=>{
     const a=o.addr.length>28?o.addr.slice(0,28)+'…':o.addr;
     const m=o.msg.length>22?o.msg.slice(0,22)+'…':o.msg;
+    const pc=platColor[o.platform]||'#888';
+    const platBadge=`<span style="background:${pc};color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;white-space:nowrap">${o.platform==='당근마켓'?'🥕':o.platform==='발주방'?'📞':o.platform==='스마트스토어'?'🟢':'🛒'} ${o.platform}</span>`;
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><button class="del-btn" onclick="delRow0(${i})" title="제외">✕</button></td>
-      <td>${i+1}</td><td>${esc(o.name)}</td><td>${fmtPhone(o.phone)}</td>
+      <td>${i+1}</td><td>${platBadge}</td><td>${esc(o.name)}</td><td>${fmtPhone(o.phone)}</td>
       <td>${esc(o.option)}</td><td>${o.qty}</td>
       <td title="${esc(o.addr)}">${esc(a)}</td><td title="${esc(o.msg)}">${esc(m)}</td>
       <td style="font-size:11px;color:#bbb">${o.orderId}</td>`;
@@ -656,7 +699,7 @@ function downloadBaljoo(){
 ====================================================== */
 var _f1a=null,_f1b=null;
 function refreshTab1UI(){
-  const hasO=orders0.length>0&&rawWb0;
+  const hasO=orders0.length>0&&Object.keys(rawWb0s).length>0;
   const hasGas=gasLoadedOrders.length>0;
   if(hasO){
     show('t1OrdOk');hide('t1OrdUpload');hide('t1GasOk');hide('t1GasBtnArea');
@@ -676,9 +719,9 @@ function onFile1a(inp){_f1a=inp.files[0];if(_f1a)setLabel('drop1a','fname1a',_f1
 function onFile1b(inp){_f1b=inp.files[0];if(_f1b)setLabel('drop1b','fname1b',_f1b.name);refreshTab1UI();}
 function runTracking(){
   if(!_f1b)return;
-  const hasO=orders0.length>0&&rawWb0;
+  const hasO=orders0.length>0&&Object.keys(rawWb0s).length>0;
   const hasGas=gasLoadedOrders.length>0;
-  const p1=hasO?Promise.resolve(rawWb0):(hasGas?Promise.resolve(null):readXlsx(_f1a));
+  const p1=hasO?Promise.resolve(rawWb0s['쿠팡']||Object.values(rawWb0s)[0]||null):(hasGas?Promise.resolve(null):readXlsx(_f1a));
   Promise.all([p1,readXlsx(_f1b)]).then(([ordWb,trkWb])=>{
     rawWb1=ordWb;
     let src;
@@ -724,24 +767,51 @@ function buildDLRow(o,seq){
 }
 function downloadCoupangUpload(){
   if(!orders1.length)return;
+  const cpOrders=orders1.filter(o=>o.platform==='쿠팡'&&o.trk);
+  if(!cpOrders.length){toast('쿠팡 주문이 없습니다.');return;}
   const wb=XLSX.utils.book_new();
   if(rawWb1){
     // 원본 DeliveryList 있음: 기존 행 구조 유지 (모든 컬럼 보존)
     const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     const out=[rows[0]];
-    orders1.forEach(o=>{if(!o.trk||o.platform==='발주방')return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);});
+    orders1.forEach(o=>{if(!o.trk||o.platform!=='쿠팡')return;const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);});
     const origSheetName=rawWb1.SheetNames[0]||'Delivery';
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),origSheetName);
   }else{
     // 구글시트 데이터: 40컬럼 DeliveryList 형식으로 재구성
     const out=[DL_HEADER];
     let seq=1;
-    orders1.forEach(o=>{if(!o.trk||o.platform==='발주방')return;out.push(buildDLRow(o,seq++));});
+    orders1.forEach(o=>{if(!o.trk||o.platform!=='쿠팡')return;out.push(buildDLRow(o,seq++));});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'Delivery');
   }
   XLSX.writeFile(wb,'쿠팡송장업로드_'+todayYMD().replace(/-/g,'')+'.xlsx');
   toast('✅ 쿠팡 대량업로드 파일 다운로드!');
+}
+
+/* 당근마켓 운송장 등록용 파일 생성
+   당근마켓 업로드 포맷: 원본 14컬럼 구조에 택배사/운송장번호 채워 넣기 */
+function downloadDaangnUpload(){
+  if(!orders1.length)return;
+  const dgOrders=orders1.filter(o=>o.platform==='당근마켓'&&o.trk);
+  if(!dgOrders.length){toast('당근마켓 주문이 없거나 매칭된 운송장이 없습니다.');return;}
+  const HDR=['주문번호','택배사','운송장번호','주문일시','수령방식','상품명','가격',
+             '당근 닉네임','주문자명','연락처','우편번호','배송주소','요청사항','현관 출입 방법'];
+  const aoa=[HDR];
+  dgOrders.forEach(o=>{
+    // 원본 rawRow 기반으로 택배사/운송장번호만 교체
+    const row=o.rawRow?o.rawRow.slice():new Array(14).fill('');
+    row[1]=o.trk.carrier;
+    row[2]=String(o.trk.trackNum);
+    aoa.push(row);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:14},{wch:12},{wch:16},{wch:18},{wch:8},{wch:45},{wch:10},
+               {wch:14},{wch:10},{wch:14},{wch:10},{wch:45},{wch:25},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,'주문 목록');
+  XLSX.writeFile(wb,'당근마켓_운송장등록_'+todayYMD().replace(/-/g,'')+'.xlsx');
+  toast('✅ 당근마켓 운송장 등록 파일 다운로드!');
 }
 
 /* ======================================================
