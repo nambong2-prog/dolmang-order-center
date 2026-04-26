@@ -351,6 +351,7 @@ let orders0=[], rawWb0s={};  // rawWb0s: {platform: wb} — 플랫폼별 원본 
 let orders1=[], rawWb1=null;
 let gasLoadedOrders=[];
 let gasTimer=null;
+let gasOrderTimer=null;
 
 /* ======================================================
    UTILS
@@ -380,17 +381,27 @@ function setSyncStatus(state,msg){
 async function loadFromGAS(){
   setSyncStatus('spin','구글시트에서 불러오는 중...');
   try{
-    const res=await fetch(GAS_URL+'?action=getAll');
+    const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
+    // ── 주문내역 복원 ──────────────────────────────────
+    if(data.orders&&data.orders.length>0){
+      // 구글시트 주문 → orders0 병합 (기존 메모리 주문과 중복 제거)
+      const existIds=new Set(orders0.map(o=>o.orderId));
+      const newOrders=data.orders.filter(o=>o.orderId&&!existIds.has(o.orderId));
+      orders0=[...orders0,...newOrders];
+      if(orders0.length>0){renderPreview0();show('preview0');}
+    }
+    // ── 정산 복원 ──────────────────────────────────────
     if(data.settlement&&data.settlement.length>0){
       const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
       localStorage.setItem(SK,JSON.stringify(normalized));
       renderSettle();
-      setSyncStatus('ok','구글시트 불러오기 완료 ('+data.settlement.length+'건)');
-      toast('✅ 구글시트에서 '+data.settlement.length+'건 불러옴');
+      const oMsg=data.orders&&data.orders.length>0?' / 주문 '+data.orders.length+'건':'';
+      setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건'+oMsg+')');
+      toast('✅ 구글시트 불러오기 완료 — 정산 '+data.settlement.length+'건'+(data.orders&&data.orders.length?', 주문 '+orders0.length+'건':''));
     }else{
-      setSyncStatus('ok','구글시트 정산 데이터 없음');
-      toast('구글시트에 정산 데이터가 없습니다.');
+      setSyncStatus('ok','구글시트 정산 데이터 없음'+(orders0.length?' / 주문 '+orders0.length+'건 복원':''));
+      if(!data.orders||!data.orders.length)toast('구글시트에 저장된 데이터가 없습니다.');
     }
   }catch(e){
     setSyncStatus('err','구글시트 연결 실패');
@@ -419,22 +430,30 @@ function scheduleAutoSave(data){
   setSyncStatus('spin','저장 예정...');
   gasTimer=setTimeout(()=>saveToGAS(data),3000);
 }
-
-/* ======================================================
-   GAS SYNC — 발주 데이터 (크로스PC 송장처리용)
-====================================================== */
-function saveOrdersToGAS(orders){
-  if(!orders||!orders.length)return;
-  const clean=orders.map(o=>{const{rawRow,...rest}=o;return rest;});
+// 주문(orders0) 구글시트 저장 — rawRow 등 대용량 필드 제외
+// orders0가 비어있어도 저장해야 GAS 데이터가 지워짐
+function saveOrdersToGAS(){
+  const skip=new Set(['rawRow','rawHeaders','rawCol']);
+  const clean=orders0.map(o=>{
+    const r={};Object.keys(o).forEach(k=>{if(!skip.has(k))r[k]=o[k];});return r;
+  });
+  setSyncStatus('spin','주문 저장 중...');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({action:'saveAll',orders:clean})}).catch(()=>{});
+    body:JSON.stringify({action:'saveAll',orders:clean})})
+    .then(()=>setSyncStatus('ok','주문 저장 완료 ('+clean.length+'건)'))
+    .catch(()=>setSyncStatus('err','주문 저장 실패'));
 }
+function scheduleOrdersSave(){
+  clearTimeout(gasOrderTimer);
+  gasOrderTimer=setTimeout(saveOrdersToGAS,3000);
+}
+
 
 async function loadOrdersFromGAS(){
   const btn=document.getElementById('btnGasLoad');
   if(btn){btn.disabled=true;btn.textContent='불러오는 중...';}
   try{
-    const res=await fetch(GAS_URL+'?action=getAll');
+    const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
     if(data.orders&&data.orders.length>0){
       gasLoadedOrders=data.orders;
@@ -608,6 +627,7 @@ function onFile0(inp){
     const keepOthers=orders0.filter(o=>o.platform!==platform);
     orders0=[...keepOthers,...orders];
     renderPreview0();show('preview0');
+    scheduleOrdersSave();  // 구글시트에 주문 자동 저장
     // 플랫폼별 합계 표시
     const summary=Object.entries(
       orders0.reduce((a,o)=>{a[o.platform]=(a[o.platform]||0)+1;return a;},{})
@@ -665,13 +685,14 @@ function addManualOrder(){
   orders0.push(order);
   renderPreview0();
   show('preview0');
+  scheduleOrdersSave();  // 구글시트에 주문 자동 저장
   // 입력 초기화
   ['mName','mPhone','mZip','mAddr','mMsg','mPrice'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('mQty').value='1';
   toast('✅ '+name+' 발주방 주문 추가됨');
 }
 
-function delRow0(i){orders0.splice(i,1);renderPreview0();}
+function delRow0(i){orders0.splice(i,1);renderPreview0();saveOrdersToGAS();}
 function downloadBaljoo(){
   if(!orders0.length){toast('❌ 발주할 주문이 없습니다.');return;}
   const HDR=['보내는사람(지정)','우편번호(지정)','주소(지정)','전화번호1(지정)','전화번호2(지정)',
@@ -691,7 +712,7 @@ function downloadBaljoo(){
   XLSX.utils.book_append_sheet(wb,ws,'발주서');
   XLSX.writeFile(wb,todayMMDD()+' 돌망돌망발주.xlsx');
   toast('✅ 발주서 다운로드 완료! 구글시트에도 저장 중...');
-  saveOrdersToGAS(orders0);
+  saveOrdersToGAS();
 }
 
 /* ======================================================
@@ -719,9 +740,11 @@ function onFile1a(inp){_f1a=inp.files[0];if(_f1a)setLabel('drop1a','fname1a',_f1
 function onFile1b(inp){_f1b=inp.files[0];if(_f1b)setLabel('drop1b','fname1b',_f1b.name);refreshTab1UI();}
 function runTracking(){
   if(!_f1b)return;
-  const hasO=orders0.length>0&&Object.keys(rawWb0s).length>0;
+  const hasO=orders0.length>0;           // 파일업로드든 GAS복원이든 orders0 있으면 OK
   const hasGas=gasLoadedOrders.length>0;
-  const p1=hasO?Promise.resolve(rawWb0s['쿠팡']||Object.values(rawWb0s)[0]||null):(hasGas?Promise.resolve(null):readXlsx(_f1a));
+  const hasWb=Object.keys(rawWb0s).length>0; // 원본 워크북 있는지 (파일 직접 업로드 시)
+  // 원본 워크북 있으면 전달, 없으면 null → buildDLRow로 재구성 (기존 발주불러오기와 동일)
+  const p1=(hasO||hasGas)?Promise.resolve(hasWb?(rawWb0s['쿠팡']||Object.values(rawWb0s)[0]||null):null):readXlsx(_f1a);
   Promise.all([p1,readXlsx(_f1b)]).then(([ordWb,trkWb])=>{
     rawWb1=ordWb;
     let src;
@@ -834,8 +857,18 @@ function addToSettlement(){
     added++;
   });
   saveS(data);
-  toast('✅ '+added+'건 정산에 추가됨'+(added===0?' (모두 이미 추가됨)':''));
-  if(added>0){switchTab(2);}
+  if(added>0){
+    // 정산 추가된 주문 orders0에서 제거 + GAS 동기화
+    const addedIds=new Set(orders1.filter(o=>o.trk&&!ids.has(o.orderId)).map(o=>o.orderId));
+    orders0=orders0.filter(o=>!addedIds.has(o.orderId));
+    if(orders0.length===0){rawWb0s={};hide('preview0');}
+    else renderPreview0();
+    saveOrdersToGAS();  // 즉시 GAS 동기화
+    toast('✅ '+added+'건 정산 추가 완료, 발주목록에서 제거됨');
+    switchTab(2);
+  }else{
+    toast('ℹ️ 모두 이미 정산에 추가된 주문입니다.');
+  }
 }
 function toggleHistSection(){
   document.getElementById('histSection').classList.toggle('hidden');
@@ -1014,19 +1047,26 @@ setupDrop('dropHist','fileHist',onFileHist);
 (async function init(){
   setSyncStatus('spin','구글시트에서 불러오는 중...');
   try{
-    const res=await fetch(GAS_URL+'?action=getAll');
+    const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
+    // ── 주문내역 자동 복원 ─────────────────────────────
+    if(data.orders&&data.orders.length>0){
+      orders0=data.orders;
+      renderPreview0();show('preview0');
+    }
+    // ── 정산 복원 ─────────────────────────────────────
     if(data.settlement&&data.settlement.length>0){
       const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
       localStorage.setItem(SK,JSON.stringify(normalized));
-      setSyncStatus('ok','구글시트 불러오기 완료 ('+data.settlement.length+'건)');
+      const oMsg=data.orders&&data.orders.length>0?' / 주문 '+data.orders.length+'건':'';
+      setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건'+oMsg+')');
     }else{
       const local=loadS();
       if(local.length===0&&SEED.length>0){
         localStorage.setItem(SK,JSON.stringify(SEED));
         setSyncStatus('ok','초기 데이터 로드됨 ('+SEED.length+'건)');
       }else{
-        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)');
+        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)'+(data.orders&&data.orders.length?' / 주문 '+data.orders.length+'건 복원':''));
       }
     }
   }catch(e){
