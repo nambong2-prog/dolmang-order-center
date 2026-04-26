@@ -140,9 +140,9 @@ tr.editing td{background:#fffde7!important}
           <div style="flex:1">
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">옵션 *</label>
             <select class="filter-select" id="mOption" style="width:100%">
-              <option value="1개 2kg">2kg</option>
-              <option value="1개 3kg">3kg</option>
-              <option value="1개 5kg">5kg</option>
+              <option value="2kg">2kg</option>
+              <option value="3kg">3kg</option>
+              <option value="5kg">5kg</option>
             </select>
           </div>
           <div style="width:70px">
@@ -356,7 +356,12 @@ let gasOrderTimer=null;
 /* ======================================================
    UTILS
 ====================================================== */
-const normPhone=p=>String(p||'').replace(/[^0-9]/g,'');
+const normPhone=p=>{
+  const s=String(p||'').replace(/[^0-9]/g,'');
+  // 한국 휴대폰번호는 11자리. 10자리이고 1로 시작하면 앞에 0 복원 (숫자셀로 저장된 경우)
+  if(s.length===10&&s.startsWith('1'))return '0'+s;
+  return s;
+};
 const extractSize=opt=>{const m=String(opt||'').match(/(\d+)\s*kg/i);return m?m[1]+'kg':null;};
 const todayYMD=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const todayMMDD=()=>todayYMD().replace(/-/g,'').slice(4);
@@ -555,23 +560,40 @@ function parseDelivery(wb,filename){
         zip:String(r[28]||'').trim(),addr:String(r[29]||'').trim(),msg:String(r[30]||'').trim()});
     }
   }else if(platform==='당근마켓'){
-    /* 당근마켓 컬럼: [0]주문번호 [1]택배사 [2]운송장번호 [3]주문일시 [4]수령방식
-       [5]상품명 [6]가격 [7]당근닉네임 [8]주문자명 [9]연락처
-       [10]우편번호 [11]배송주소 [12]요청사항 [13]현관출입방법 */
+    /* 당근마켓 "진행중 주문내역" 포맷 — 헤더 기반으로 컬럼 동적 감지
+       [0]주문번호 [1]주문상태 [2]주문일시 [3]수령방식 [4]상품명 [5]가격
+       [6]당근닉네임 [7]주문자명 [8]연락처 [9]우편번호 [10]배송주소
+       [11]운송장번호 [12]요청사항 [13]현관출입방법 */
+    const hdr=rows[0].map(h=>String(h||'').trim());
+    const ci={
+      id:   hdr.findIndex(h=>h==='주문번호'),
+      date: hdr.findIndex(h=>h.includes('주문일')),
+      prod: hdr.findIndex(h=>h.includes('상품명')),
+      price:hdr.findIndex(h=>h==='가격'),
+      nick: hdr.findIndex(h=>h.includes('닉네임')),
+      name: hdr.findIndex(h=>h==='주문자명'),
+      phone:hdr.findIndex(h=>h==='연락처'),
+      zip:  hdr.findIndex(h=>h==='우편번호'),
+      addr: hdr.findIndex(h=>h.includes('배송주소')),
+      req:  hdr.findIndex(h=>h.includes('요청사항')),
+      door: hdr.findIndex(h=>h.includes('현관')),
+    };
     for(let i=1;i<rows.length;i++){
       const r=rows[i];
-      const orderId=String(r[0]||'').trim();
+      const orderId=ci.id>=0?String(r[ci.id]||'').trim():'';
       if(!orderId)continue;
-      const{option,qty}=parseDaangnProduct(String(r[5]||''));
-      const req=String(r[12]||'').trim();
-      const door=String(r[13]||'').trim();
+      const{option,qty}=parseDaangnProduct(ci.prod>=0?String(r[ci.prod]||''):'');
+      const req=ci.req>=0?String(r[ci.req]||'').trim():'';
+      const door=ci.door>=0?String(r[ci.door]||'').trim():'';
       const msg=[req,door].filter(Boolean).join(' / ');
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'당근마켓',orderId,
-        orderDate:String(r[3]||'').slice(0,10),
-        option,payment:Number(String(r[6]||'').replace(/[^0-9]/g,''))||0,qty,
-        name:String(r[8]||'').trim(),phone:normPhone(r[9]),
-        zip:String(r[10]||'').trim(),addr:String(r[11]||'').trim(),msg,
-        nickname:String(r[7]||'').trim()});
+        orderDate:ci.date>=0?String(r[ci.date]||'').slice(0,10):'',
+        option,payment:ci.price>=0?Number(String(r[ci.price]||'').replace(/[^0-9]/g,''))||0:0,qty,
+        name:ci.name>=0?String(r[ci.name]||'').trim():'',
+        phone:ci.phone>=0?normPhone(r[ci.phone]):'',
+        zip:ci.zip>=0?String(r[ci.zip]||'').trim():'',
+        addr:ci.addr>=0?String(r[ci.addr]||'').trim():'',msg,
+        nickname:ci.nick>=0?String(r[ci.nick]||'').trim():''});
     }
   }else{
     const hIdx=n=>headers.findIndex(h=>h.includes(n));
@@ -652,7 +674,7 @@ function renderPreview0(){
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><button class="del-btn" onclick="delRow0(${i})" title="제외">✕</button></td>
       <td>${i+1}</td><td>${platBadge}</td><td>${esc(o.name)}</td><td>${fmtPhone(o.phone)}</td>
-      <td>${esc(o.option)}</td><td>${o.qty}</td>
+      <td>${esc(extractSize(o.option)||o.option)}</td><td>${o.qty}</td>
       <td title="${esc(o.addr)}">${esc(a)}</td><td title="${esc(o.msg)}">${esc(m)}</td>
       <td style="font-size:11px;color:#bbb">${o.orderId}</td>`;
     tbody.appendChild(tr);
@@ -701,8 +723,11 @@ function downloadBaljoo(){
   const aoa=[HDR];
   orders0.forEach(o=>{
     const sz=extractSize(o.option)||'2kg';
-    aoa.push([SENDER.name,SENDER.zip,SENDER.addr,SENDER.phone,'',
-      o.name,o.zip,o.addr,o.phone,'',o.qty,0,0,3,
+    // 전화번호는 문자열 강제 지정 (숫자로 변환되어 앞 0 사라지는 것 방지)
+    const ph=o.phone?{t:'s',v:String(o.phone)}:'';
+    const sph={t:'s',v:String(SENDER.phone)};
+    aoa.push([SENDER.name,SENDER.zip,SENDER.addr,sph,'',
+      o.name,o.zip,o.addr,ph,'',o.qty,0,0,3,
       `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${sz} ${o.qty}개)`,
       o.msg,4500]);
   });
@@ -760,7 +785,7 @@ function runTracking(){
     const tbody=document.getElementById('tbody1');tbody.innerHTML='';
     orders1.forEach((o,i)=>{
       const ok=!!o.trk;const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${i+1}</td><td>${esc(o.name)}</td><td>${esc(o.option)}</td><td>${o.qty}</td>
+      tr.innerHTML=`<td>${i+1}</td><td>${esc(o.name)}</td><td>${esc(extractSize(o.option)||o.option)}</td><td>${o.qty}</td>
         <td><span class="badge ${ok?'badge-ok':'badge-miss'}">${ok?'✅ 매칭':'❌ 미매칭'}</span></td>
         <td>${o.trk?esc(o.trk.carrier):'-'}</td><td>${o.trk?o.trk.trackNum:'-'}</td>`;
       tbody.appendChild(tr);
@@ -818,14 +843,13 @@ function downloadDaangnUpload(){
   if(!orders1.length)return;
   const dgOrders=orders1.filter(o=>o.platform==='당근마켓'&&o.trk);
   if(!dgOrders.length){toast('당근마켓 주문이 없거나 매칭된 운송장이 없습니다.');return;}
-  const HDR=['주문번호','택배사','운송장번호','주문일시','수령방식','상품명','가격',
-             '당근 닉네임','주문자명','연락처','우편번호','배송주소','요청사항','현관 출입 방법'];
+  // 당근마켓 진행중 주문내역 포맷: 원본 행 유지 + [11]운송장번호 채워넣기
+  const HDR=['주문번호','주문상태','주문일시','수령방식','상품명','가격',
+             '당근 닉네임','주문자명','연락처','우편번호','배송주소','운송장번호','요청사항','현관 출입 방법'];
   const aoa=[HDR];
   dgOrders.forEach(o=>{
-    // 원본 rawRow 기반으로 택배사/운송장번호만 교체
     const row=o.rawRow?o.rawRow.slice():new Array(14).fill('');
-    row[1]=o.trk.carrier;
-    row[2]=String(o.trk.trackNum);
+    row[11]=String(o.trk.trackNum);  // 운송장번호 [11]번 컬럼에 입력
     aoa.push(row);
   });
   const wb=XLSX.utils.book_new();
@@ -949,7 +973,7 @@ function renderSettle(){
     tr.id='sr_'+r.orderId;
     tr.innerHTML=`<td>${i+1}</td><td>${esc(normDate(r.date))}</td><td>${esc(r.name)}</td>
       <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':r.platform==='발주방'?'badge-bj':'badge-ss'}">${esc(r.platform)}</span></td>
-      <td>${esc(r.option)}</td><td>${r.qty}</td>
+      <td>${esc(extractSize(r.option)||r.option)}</td><td>${r.qty}</td>
       <td>${comma(r.salePrice)}원</td><td>${comma(r.costPrice)}원</td><td>${comma(r.commission)}원</td>
       <td class="${pc}">${comma(r.profit)}원</td><td>${Number(r.margin).toFixed(1)}%</td>
       <td style="font-size:11px">${esc(r.trackNum||'')}</td>
