@@ -117,6 +117,10 @@ tr.editing td{background:#fffde7!important}
       <div class="label">쿠팡 DeliveryList / 스마트스토어 / 당근마켓 주문파일 업로드<br><small>클릭 또는 드래그 — 플랫폼 자동 감지</small></div>
       <div class="filename" id="fname0"></div>
     </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-cloud" onclick="loadOrdersForTab0()" id="btnGasLoad0">☁️ 구글시트에서 미처리 발주 불러오기</button>
+      <span id="t0GasStatus" style="margin-left:10px;font-size:13px;color:#666"></span>
+    </div>
   </div>
 
   <div class="card" id="manualCard">
@@ -561,9 +565,9 @@ function parseDelivery(wb,filename){
     }
   }else if(platform==='당근마켓'){
     /* 당근마켓 "진행중 주문내역" 포맷 — 헤더 기반으로 컬럼 동적 감지
-       [0]주문번호 [1]주문상태 [2]주문일시 [3]수령방식 [4]상품명 [5]가격
-       [6]당근닉네임 [7]주문자명 [8]연락처 [9]우편번호 [10]배송주소
-       [11]운송장번호 [12]요청사항 [13]현관출입방법 */
+       [0]주문번호 [1]택배사 [2]운송장번호 [3]주문일시 [4]수령방식 [5]상품명 [6]가격
+       [7]당근닉네임 [8]주문자명 [9]연락처 [10]우편번호 [11]배송주소
+       [12]요청사항 [13]현관출입방법 */
     const hdr=rows[0].map(h=>String(h||'').trim());
     const ci={
       id:   hdr.findIndex(h=>h==='주문번호'),
@@ -736,11 +740,7 @@ function downloadBaljoo(){
   ws['!cols']=[{wch:12},{wch:8},{wch:30},{wch:14},{wch:8},{wch:10},{wch:8},{wch:40},{wch:14},{wch:8},{wch:10},{wch:10},{wch:10},{wch:8},{wch:50},{wch:35},{wch:6}];
   XLSX.utils.book_append_sheet(wb,ws,'발주서');
   XLSX.writeFile(wb,todayMMDD()+' 돌망돌망발주.xlsx');
-  // 발주서 생성 후 미리보기 초기화
-  orders0=[];rawWb0s={};
-  hide('preview0');
-  saveOrdersToGAS();
-  toast('✅ 발주서 다운로드 완료 — 발주목록 초기화됨');
+  toast('✅ 발주서 다운로드 완료');
 }
 
 /* ======================================================
@@ -841,18 +841,21 @@ function downloadCoupangUpload(){
 }
 
 /* 당근마켓 운송장 등록용 파일 생성
-   당근마켓 업로드 포맷: 원본 14컬럼 구조에 택배사/운송장번호 채워 넣기 */
+   당근마켓 업로드 포맷: 원본 14컬럼 구조에 택배사/운송장번호 채워 넣기
+   실제 당근마켓 포맷: [0]주문번호 [1]택배사 [2]운송장번호 [3]주문일시 [4]수령방식
+                       [5]상품명 [6]가격 [7]당근닉네임 [8]주문자명 [9]연락처
+                       [10]우편번호 [11]배송주소 [12]요청사항 [13]현관출입방법 */
 function downloadDaangnUpload(){
   if(!orders1.length)return;
   const dgOrders=orders1.filter(o=>o.platform==='당근마켓'&&o.trk);
   if(!dgOrders.length){toast('당근마켓 주문이 없거나 매칭된 운송장이 없습니다.');return;}
-  // 당근마켓 진행중 주문내역 포맷: 원본 행 유지 + [11]운송장번호 채워넣기
-  const HDR=['주문번호','주문상태','주문일시','수령방식','상품명','가격',
-             '당근 닉네임','주문자명','연락처','우편번호','배송주소','운송장번호','요청사항','현관 출입 방법'];
+  const HDR=['주문번호','택배사','운송장번호','주문일시','수령방식','상품명','가격',
+             '당근 닉네임','주문자명','연락처','우편번호','배송주소','요청사항','현관 출입 방법'];
   const aoa=[HDR];
   dgOrders.forEach(o=>{
     const row=o.rawRow?o.rawRow.slice():new Array(14).fill('');
-    row[11]=String(o.trk.trackNum);  // 운송장번호 [11]번 컬럼에 입력
+    row[1]=o.trk.carrier||'CJ대한통운';  // [1] 택배사
+    row[2]=String(o.trk.trackNum);        // [2] 운송장번호
     aoa.push(row);
   });
   const wb=XLSX.utils.book_new();
@@ -1069,31 +1072,53 @@ setupDrop('drop1b','file1b',onFile1b);
 setupDrop('dropHist','fileHist',onFileHist);
 
 /* ======================================================
-   INIT — 앱 시작 시 구글시트에서 자동 불러오기
+   TAB 0 — 구글시트에서 미처리 발주 수동 불러오기
+====================================================== */
+async function loadOrdersForTab0(){
+  const btn=document.getElementById('btnGasLoad0');
+  const status=document.getElementById('t0GasStatus');
+  if(btn){btn.disabled=true;btn.textContent='불러오는 중...';}
+  try{
+    const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
+    const data=await res.json();
+    if(data.orders&&data.orders.length>0){
+      orders0=data.orders;
+      rawWb0s={};
+      renderPreview0();show('preview0');
+      if(status)status.textContent=data.orders.length+'건 불러옴';
+      toast('✅ 구글시트에서 미처리 발주 '+data.orders.length+'건 불러옴');
+    }else{
+      if(status)status.textContent='저장된 미처리 발주 없음';
+      toast('구글시트에 저장된 미처리 발주가 없습니다.');
+    }
+  }catch(e){
+    if(status)status.textContent='연결 실패';
+    toast('❌ GAS 연결 실패: '+e.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='☁️ 구글시트에서 미처리 발주 불러오기';}
+  }
+}
+
+/* ======================================================
+   INIT — 앱 시작 시 정산 데이터만 자동 불러오기 (주문은 수동 로드)
 ====================================================== */
 (async function init(){
   setSyncStatus('spin','구글시트에서 불러오는 중...');
   try{
     const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
-    // ── 주문내역 자동 복원 ─────────────────────────────
-    if(data.orders&&data.orders.length>0){
-      orders0=data.orders;
-      renderPreview0();show('preview0');
-    }
     // ── 정산 복원 ─────────────────────────────────────
     if(data.settlement&&data.settlement.length>0){
       const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
       localStorage.setItem(SK,JSON.stringify(normalized));
-      const oMsg=data.orders&&data.orders.length>0?' / 주문 '+data.orders.length+'건':'';
-      setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건'+oMsg+')');
+      setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건)');
     }else{
       const local=loadS();
       if(local.length===0&&SEED.length>0){
         localStorage.setItem(SK,JSON.stringify(SEED));
         setSyncStatus('ok','초기 데이터 로드됨 ('+SEED.length+'건)');
       }else{
-        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)'+(data.orders&&data.orders.length?' / 주문 '+data.orders.length+'건 복원':''));
+        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)');
       }
     }
   }catch(e){
