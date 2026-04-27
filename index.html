@@ -872,10 +872,10 @@ function downloadDaangnUpload(){
 ====================================================== */
 function addToSettlement(){
   if(!orders1.length)return;
-  const data=loadS();const ids=new Set(data.map(r=>r.orderId));
+  const data=loadS();const ids=new Set(data.map(r=>String(r.orderId)));
   let added=0;
   orders1.forEach(o=>{
-    if(!o.trk||ids.has(o.orderId))return;
+    if(!o.trk||ids.has(String(o.orderId)))return;
     const feeR=FEE_RT[o.platform]??0.108;  // 주문별 플랫폼 수수료
     const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
     const fee=Math.round(o.payment*feeR);const profit=o.payment-cost-fee;
@@ -889,8 +889,8 @@ function addToSettlement(){
   saveS(data);
   if(added>0){
     // 정산 추가된 주문 orders0에서 제거 + GAS 동기화
-    const addedIds=new Set(orders1.filter(o=>o.trk&&!ids.has(o.orderId)).map(o=>o.orderId));
-    orders0=orders0.filter(o=>!addedIds.has(o.orderId));
+    const addedIds=new Set(orders1.filter(o=>o.trk&&!ids.has(String(o.orderId))).map(o=>String(o.orderId)));
+    orders0=orders0.filter(o=>!addedIds.has(String(o.orderId)));
     if(orders0.length===0){rawWb0s={};hide('preview0');}
     else renderPreview0();
     saveOrdersToGAS();  // 즉시 GAS 동기화
