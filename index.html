@@ -975,11 +975,14 @@ function renderSettle(){
   hide('emptyMsg');
   filtered.forEach((r,i)=>{
     const pc=r.profit>=0?'profit-positive':'profit-negative';
+    const isMulti=r.qty>1;
     const tr=document.createElement('tr');
     tr.id='sr_'+r.orderId;
+    if(isMulti) tr.style.cssText='background:linear-gradient(90deg,#fff8e1 0%,#fff 60%);border-left:3px solid #f59e0b';
+    const qtyCell=isMulti?`<td><span style="background:#f59e0b;color:#fff;font-weight:700;padding:1px 7px;border-radius:10px;font-size:12px">${r.qty}</span></td>`:`<td>${r.qty}</td>`;
     tr.innerHTML=`<td>${i+1}</td><td>${esc(normDate(r.date))}</td><td>${esc(r.name)}</td>
       <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':r.platform==='발주방'?'badge-bj':'badge-ss'}">${esc(r.platform)}</span></td>
-      <td>${esc(extractSize(r.option)||r.option)}</td><td>${r.qty}</td>
+      <td>${esc(extractSize(r.option)||r.option)}</td>${qtyCell}
       <td>${comma(r.salePrice)}원</td><td>${comma(r.costPrice)}원</td><td>${comma(r.commission)}원</td>
       <td class="${pc}">${comma(r.profit)}원</td><td>${Number(r.margin).toFixed(1)}%</td>
       <td style="font-size:11px">${esc(r.trackNum||'')}</td>
