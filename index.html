@@ -736,8 +736,11 @@ function downloadBaljoo(){
   ws['!cols']=[{wch:12},{wch:8},{wch:30},{wch:14},{wch:8},{wch:10},{wch:8},{wch:40},{wch:14},{wch:8},{wch:10},{wch:10},{wch:10},{wch:8},{wch:50},{wch:35},{wch:6}];
   XLSX.utils.book_append_sheet(wb,ws,'발주서');
   XLSX.writeFile(wb,todayMMDD()+' 돌망돌망발주.xlsx');
-  toast('✅ 발주서 다운로드 완료! 구글시트에도 저장 중...');
+  // 발주서 생성 후 미리보기 초기화
+  orders0=[];rawWb0s={};
+  hide('preview0');
   saveOrdersToGAS();
+  toast('✅ 발주서 다운로드 완료 — 발주목록 초기화됨');
 }
 
 /* ======================================================
