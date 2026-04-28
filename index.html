@@ -745,7 +745,9 @@ function downloadBaljoo(){
       o.name,o.zip,o.addr,ph,'',o.qty,0,0,3,
       (o.platform==='쿠팡'
         ? (o.prodName||`돌망돌망 제주 유기농 친환경 흙당근 ${sz}`)+' '+o.option
-        : o.option||`돌망돌망 제주 유기농 친환경 흙당근 ${sz} ${o.qty}개`),
+        : o.platform==='스마트스토어'
+          ? o.option||`돌망돌망 제주 유기농 친환경 흙당근 ${sz} ${o.qty}개`
+          : `돌망돌망 제주 유기농 친환경 흙당근 ${o.option||sz} 산지직송 국내산, ${o.qty}개`),
       o.msg,4500]);
   });
   const wb=XLSX.utils.book_new();
