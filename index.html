@@ -609,7 +609,7 @@ function parseDelivery(wb,filename){
     const ci={oid:hIdx('상품주문번호'),name:Math.max(hIdx('수취인명'),hIdx('받는분성명')),
       phone:Math.max(hIdx('수취인연락처'),hIdx('수취인전화번호')),
       addr:Math.max(hIdx('통합배송지'),hIdx('배송지')),
-      opt:Math.max(hIdx('옵션정보'),hIdx('상품명')),qty:hIdx('수량'),
+      opt:hIdx('옵션정보'),pname:hIdx('상품명'),qty:hIdx('수량'),
       pay:Math.max(hIdx('총 주문금액'),hIdx('상품가격'),hIdx('상품금액'),hIdx('결제금액')),
       msg:Math.max(hIdx('배송메세지'),hIdx('배송메모'),hIdx('배송 메세지')),
       zip:hIdx('우편번호'),date:hIdx('결제일')};
@@ -617,9 +617,11 @@ function parseDelivery(wb,filename){
       const r=rows[i];
       const orderId=String(ci.oid>=0?r[ci.oid]:'').trim();
       if(!orderId)continue;
+      /* 옵션정보 있으면 사용, 없으면 상품명(네이버 상품명) 사용 */
+      const ssOpt=(ci.opt>=0&&String(r[ci.opt]||'').trim())?String(r[ci.opt]).trim():(ci.pname>=0?String(r[ci.pname]||'').trim():'');
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'스마트스토어',orderId,
         orderDate:ci.date>=0?String(r[ci.date]||'').slice(0,10):'',
-        option:String(ci.opt>=0?r[ci.opt]:'').trim(),payment:Number(ci.pay>=0?r[ci.pay]:0)||0,
+        option:ssOpt,payment:Number(ci.pay>=0?r[ci.pay]:0)||0,
         qty:Number(ci.qty>=0?r[ci.qty]:1)||1,name:String(ci.name>=0?r[ci.name]:'').trim(),
         phone:normPhone(ci.phone>=0?r[ci.phone]:''),zip:String(ci.zip>=0?r[ci.zip]:'').trim(),
         addr:String(ci.addr>=0?r[ci.addr]:'').trim(),msg:String(ci.msg>=0?r[ci.msg]:'').trim()});
@@ -741,7 +743,7 @@ function downloadBaljoo(){
     const sph={t:'s',v:String(SENDER.phone)};
     aoa.push([SENDER.name,SENDER.zip,SENDER.addr,sph,'',
       o.name,o.zip,o.addr,ph,'',o.qty,0,0,3,
-      `돌망돌망 제주 유기농 친환경 흙당근 2kg 3kg 5kg 산지직송 국내산, 1개 (${sz} ${o.qty}개)`,
+      o.option||`돌망돌망 제주 유기농 친환경 흙당근 ${sz} ${o.qty}개`,
       o.msg,4500]);
   });
   const wb=XLSX.utils.book_new();
