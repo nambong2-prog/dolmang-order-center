@@ -748,7 +748,7 @@ function downloadBaljoo(){
 ====================================================== */
 var _f1a=null,_f1b=null;
 function refreshTab1UI(){
-  const hasO=orders0.length>0&&Object.keys(rawWb0s).length>0;
+  const hasO=orders0.length>0;  // 파일업로드든 GAS불러오기든 orders0 있으면 OK
   const hasGas=gasLoadedOrders.length>0;
   if(hasO){
     show('t1OrdOk');hide('t1OrdUpload');hide('t1GasOk');hide('t1GasBtnArea');
