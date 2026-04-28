@@ -560,6 +560,7 @@ function parseDelivery(wb,filename){
       if(!orderId)continue;
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'쿠팡',orderId,
         bundleId:String(r[1]||'').trim(),  // 묶음배송번호 (buildDLRow 재구성용)
+        optionId:String(r[14]||'').trim(), // 옵션ID (buildDLRow 재구성용 — 빨간색 필수항목)
         orderDate:String(r[9]||'').slice(0,10),option:String(r[11]||'').trim(),prodName:String(r[10]||'').trim(),
         payment:Number(r[18])||0,qty:Number(r[22])||1,
         name:String(r[26]||'').trim(),phone:normPhone(r[27]),
@@ -848,6 +849,7 @@ function buildDLRow(o,seq){
   row[3]=o.trk.carrier;
   row[4]=String(o.trk.trackNum);
   row[5]='N';                       // 분리배송 Y/N — 기본값 N (필수항목, 분리배송 없으므로 항상 N)
+  row[14]=String(o.optionId||'');   // 옵션ID (필수항목 — DeliveryList 원본에서 저장된 값)
   row[9]=normDate(o.orderDate)||todayYMD();  // ISO 형식 방지 (GAS에서 T포함 날짜로 올 수 있음)
   row[11]=o.option;
   row[18]=o.payment;
