@@ -560,7 +560,7 @@ function parseDelivery(wb,filename){
       if(!orderId)continue;
       orders.push({rowIdx:i,rawRow:r.slice(),platform:'쿠팡',orderId,
         bundleId:String(r[1]||'').trim(),  // 묶음배송번호 (buildDLRow 재구성용)
-        orderDate:String(r[9]||'').slice(0,10),option:String(r[11]||'').trim(),
+        orderDate:String(r[9]||'').slice(0,10),option:String(r[11]||'').trim(),prodName:String(r[10]||'').trim(),
         payment:Number(r[18])||0,qty:Number(r[22])||1,
         name:String(r[26]||'').trim(),phone:normPhone(r[27]),
         zip:String(r[28]||'').trim(),addr:String(r[29]||'').trim(),msg:String(r[30]||'').trim()});
@@ -743,7 +743,9 @@ function downloadBaljoo(){
     const sph={t:'s',v:String(SENDER.phone)};
     aoa.push([SENDER.name,SENDER.zip,SENDER.addr,sph,'',
       o.name,o.zip,o.addr,ph,'',o.qty,0,0,3,
-      o.option||`돌망돌망 제주 유기농 친환경 흙당근 ${sz} ${o.qty}개`,
+      (o.platform==='쿠팡'
+        ? (o.prodName||`돌망돌망 제주 유기농 친환경 흙당근 ${sz}`)+' '+o.option
+        : o.option||`돌망돌망 제주 유기농 친환경 흙당근 ${sz} ${o.qty}개`),
       o.msg,4500]);
   });
   const wb=XLSX.utils.book_new();
