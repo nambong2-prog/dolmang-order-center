@@ -1308,29 +1308,29 @@ async function loadOrdersForTab0(){
    INIT — 앱 시작 시 정산 데이터만 자동 불러오기 (주문은 수동 로드)
 ====================================================== */
 (async function init(){
+  // ── 1. 로컬 먼저 확인 — 비어있으면 SEED로 초기화 (버전 업그레이드 시) ──
+  const local=loadS();
+  if(local.length===0&&SEED.length>0){
+    localStorage.setItem(SK,JSON.stringify(SEED));
+    setSyncStatus('ok','초기 데이터 로드됨 ('+SEED.length+'건)');
+    renderSettle();
+    // 새 SEED를 구글시트에도 자동 저장
+    scheduleAutoSave(SEED);
+    return;
+  }
+  // ── 2. 로컬 데이터 있으면 GAS 동기화 시도 ──
   setSyncStatus('spin','구글시트에서 불러오는 중...');
   try{
     const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
-    // ── 정산 복원 ─────────────────────────────────────
     if(data.settlement&&data.settlement.length>0){
       const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
       localStorage.setItem(SK,JSON.stringify(normalized));
       setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건)');
     }else{
-      const local=loadS();
-      if(local.length===0&&SEED.length>0){
-        localStorage.setItem(SK,JSON.stringify(SEED));
-        setSyncStatus('ok','초기 데이터 로드됨 ('+SEED.length+'건)');
-      }else{
-        setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)');
-      }
+      setSyncStatus('ok','로컬 데이터 사용 ('+local.length+'건)');
     }
   }catch(e){
-    const local=loadS();
-    if(local.length===0&&SEED.length>0){
-      localStorage.setItem(SK,JSON.stringify(SEED));
-    }
     setSyncStatus('err','구글시트 연결 실패 — 로컬 데이터 사용');
     console.warn('GAS load failed:',e);
   }
