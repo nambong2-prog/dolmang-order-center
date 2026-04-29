@@ -574,7 +574,10 @@ function scheduleAutoSave(data){
 function saveOrdersToGAS(){
   const skip=new Set(['rawRow','rawHeaders','rawCol']);
   const clean=orders0.map(o=>{
-    const r={};Object.keys(o).forEach(k=>{if(!skip.has(k))r[k]=o[k];});return r;
+    const r={};Object.keys(o).forEach(k=>{if(!skip.has(k))r[k]=o[k];});
+    // rawRow를 JSON 문자열로 GAS에 저장 (쿠팡 업로드 파일 완전 복원용)
+    if(o.rawRow&&o.rawRow.length>0)r.rawRowJson=JSON.stringify(o.rawRow);
+    return r;
   });
   setSyncStatus('spin','주문 저장 중...');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
@@ -595,7 +598,11 @@ async function loadOrdersFromGAS(){
     const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
     const data=await res.json();
     if(data.orders&&data.orders.length>0){
-      gasLoadedOrders=data.orders;
+      // rawRowJson이 있는 주문은 rawRow 복원 (쿠팡 업로드 완전 복원)
+      gasLoadedOrders=data.orders.map(o=>{
+        if(o.rawRowJson){try{return{...o,rawRow:JSON.parse(o.rawRowJson)};}catch(e){}}
+        return o;
+      });
       document.getElementById('t1GasCount').textContent=data.orders.length;
       show('t1GasOk');hide('t1GasBtnArea');
       refreshTab1UI();
@@ -995,31 +1002,26 @@ function downloadCoupangUpload(){
   const cpOrders=orders1.filter(o=>o.platform==='쿠팡'&&o.trk);
   if(!cpOrders.length){toast('쿠팡 주문이 없습니다.');return;}
   const wb=XLSX.utils.book_new();
-  if(rawWb1){
-    // 원본 DeliveryList 있음: 기존 행 구조 유지 (모든 컬럼 보존)
-    const ws=rawWb1.Sheets[rawWb1.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    const out=[rows[0]];
+  {
+    // rawWb1 있으면 원본 헤더 사용, 없으면 DL_HEADER 사용
+    const headerRow=rawWb1
+      ? XLSX.utils.sheet_to_json(rawWb1.Sheets[rawWb1.SheetNames[0]],{header:1,defval:''})[0]
+      : DL_HEADER;
+    const sheetName=rawWb1?(rawWb1.SheetNames[0]||'Delivery'):'Delivery';
+    const out=[headerRow];
     let seq=1;
     orders1.forEach(o=>{
       if(!o.trk||o.platform!=='쿠팡')return;
-      if(o.rawRow){
-        // rawRow 있으면 원본 구조 그대로 유지 (완전한 40컬럼)
+      if(o.rawRow&&o.rawRow.length>0){
+        // rawRow 있음 (파일 직접 업로드 OR GAS rawRowJson 복원) — 원본 40컬럼 그대로
         const row=o.rawRow.slice();row[3]=o.trk.carrier;row[4]=String(o.trk.trackNum);out.push(row);
       }else{
-        // rawRow 없으면 buildDLRow로 재구성 (GAS 경로 + DeliveryList 미제공 시 fallback)
+        // rawRow 없음 — buildDLRow 최소 재구성 (fallback)
         out.push(buildDLRow(o,seq));
       }
       seq++;
     });
-    const origSheetName=rawWb1.SheetNames[0]||'Delivery';
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),origSheetName);
-  }else{
-    // 구글시트 데이터: 40컬럼 DeliveryList 형식으로 재구성
-    const out=[DL_HEADER];
-    let seq=1;
-    orders1.forEach(o=>{if(!o.trk||o.platform!=='쿠팡')return;out.push(buildDLRow(o,seq++));});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),'Delivery');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(out),sheetName);
   }
   XLSX.writeFile(wb,'쿠팡송장업로드_'+todayYMD().replace(/-/g,'')+'.xlsx');
   toast('✅ 쿠팡 대량업로드 파일 다운로드!');
