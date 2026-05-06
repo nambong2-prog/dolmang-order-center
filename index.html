@@ -91,6 +91,18 @@ tr.editing td{background:#fffde7!important}
 .toast.show{opacity:1}
 .hist-section{border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-top:14px;background:#fafafa}
 .hist-section h3{margin-bottom:10px}
+.view-toggle{display:flex;gap:6px;margin-bottom:14px}
+.view-toggle button{padding:6px 16px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#666;font-weight:500;transition:all .15s}
+.view-toggle button.active{background:#ff6b35;border-color:#ff6b35;color:#fff;font-weight:700}
+.monthly-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.monthly-tbl th{background:#f5f5f5;padding:8px 10px;text-align:right;font-weight:600;color:#555;border-bottom:2px solid #e0e0e0;white-space:nowrap}
+.monthly-tbl th:first-child{text-align:center}
+.monthly-tbl td{padding:7px 10px;text-align:right;border-bottom:1px solid #f0f0f0;color:#333}
+.monthly-tbl td:first-child{text-align:center;font-weight:700;color:#ff6b35}
+.monthly-tbl tr:last-child td{background:#fff8f5;font-weight:700;border-top:2px solid #ffccaa;color:#c0440a}
+.monthly-tbl tr:last-child td:first-child{color:#c0440a}
+.monthly-tbl .pos{color:#2e7d32;font-weight:700}
+.monthly-tbl .neg{color:#c62828;font-weight:700}
 </style>
 </head>
 <body>
@@ -257,16 +269,30 @@ tr.editing td{background:#fffde7!important}
 <div id="tab2" class="tab-content">
   <div class="card">
     <h2>📊 정산 요약</h2>
-    <div class="summary-grid" id="summaryGrid">
-      <div class="summary-box"><div class="val" id="s2count">0</div><div class="lbl">정산 건수</div></div>
-      <div class="summary-box blue"><div class="val" id="s2sales">0</div><div class="lbl">총 매출</div></div>
-      <div class="summary-box red"><div class="val" id="s2sonang">0</div><div class="lbl">소낭 정산금액</div></div>
-      <div class="summary-box red"><div class="val" id="s2fee">0</div><div class="lbl">총 수수료</div></div>
-      <div class="summary-box green"><div class="val" id="s2profit">0</div><div class="lbl">총 순이익</div></div>
-      <div class="summary-box green"><div class="val" id="s2margin">0%</div><div class="lbl">마진율</div></div>
-      <div class="summary-box orange"><div class="val" id="s2_2kg">0건</div><div class="lbl">2kg</div></div>
-      <div class="summary-box orange"><div class="val" id="s2_3kg">0건</div><div class="lbl">3kg</div></div>
-      <div class="summary-box orange"><div class="val" id="s2_5kg">0건</div><div class="lbl">5kg</div></div>
+    <div class="view-toggle">
+      <button id="btnViewTotal" class="active" onclick="switchSummaryView('total')">📊 전체 합계</button>
+      <button id="btnViewMonth" onclick="switchSummaryView('month')">📅 월별 요약</button>
+    </div>
+    <div id="viewTotal">
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-box"><div class="val" id="s2count">0</div><div class="lbl">정산 건수</div></div>
+        <div class="summary-box blue"><div class="val" id="s2sales">0</div><div class="lbl">총 매출</div></div>
+        <div class="summary-box red"><div class="val" id="s2sonang">0</div><div class="lbl">소낭 정산금액</div></div>
+        <div class="summary-box red"><div class="val" id="s2fee">0</div><div class="lbl">총 수수료</div></div>
+        <div class="summary-box green"><div class="val" id="s2profit">0</div><div class="lbl">총 순이익</div></div>
+        <div class="summary-box green"><div class="val" id="s2margin">0%</div><div class="lbl">마진율</div></div>
+        <div class="summary-box orange"><div class="val" id="s2_2kg">0개</div><div class="lbl">2kg</div></div>
+        <div class="summary-box orange"><div class="val" id="s2_3kg">0개</div><div class="lbl">3kg</div></div>
+        <div class="summary-box orange"><div class="val" id="s2_5kg">0개</div><div class="lbl">5kg</div></div>
+      </div>
+    </div>
+    <div id="viewMonth" style="display:none">
+      <div class="tbl-wrap"><table class="monthly-tbl">
+        <thead><tr>
+          <th>월</th><th>건수</th><th>매출</th><th>소낭원가</th><th>수수료</th><th>순이익</th><th>마진율</th><th>2kg</th><th>3kg</th><th>5kg</th>
+        </tr></thead>
+        <tbody id="tbodyMonth"></tbody>
+      </table></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-success" onclick="downloadSettlement()">⬇️ 엑셀 다운로드</button>
@@ -289,13 +315,48 @@ tr.editing td{background:#fffde7!important}
       </div>
     </div>
   </div>
-    <div class="card" id="supplierSettleCard">
+  <div class="card">
+    <h2>📦 공급가 관리 <span style="font-size:13px;font-weight:400;color:#888">— 날짜별 단가 이력</span>
+      <button class="btn btn-sm btn-outline" style="float:right;font-size:12px" onclick="toggleSupplyMgr()">⚙️ 관리</button>
+    </h2>
+    <div id="supplyMgrBody">
+      <div id="supplyTierList" style="margin-bottom:10px"></div>
+    </div>
+    <div id="supplyMgrEdit" style="display:none;border-top:1px solid #eee;padding-top:12px;margin-top:8px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#555">새 공급가 구간 추가</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div><label style="font-size:11px;color:#888;display:block">적용시작일</label>
+          <input class="filter-input" type="date" id="supplyFromDate" style="width:130px"></div>
+        <div><label style="font-size:11px;color:#888;display:block">2kg 공급가</label>
+          <input class="filter-input" type="number" id="supplyP2" placeholder="12000" style="width:90px"></div>
+        <div><label style="font-size:11px;color:#888;display:block">3kg 공급가</label>
+          <input class="filter-input" type="number" id="supplyP3" placeholder="15000" style="width:90px"></div>
+        <div><label style="font-size:11px;color:#888;display:block">5kg 공급가</label>
+          <input class="filter-input" type="number" id="supplyP5" placeholder="21000" style="width:90px"></div>
+        <div style="align-self:flex-end">
+          <button class="btn btn-success btn-sm" onclick="addSupplyTier()">✅ 추가</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn btn-sm" style="background:#1976d2;color:white" onclick="recalcAllCosts()">🔄 전체 내역 원가 재계산</button>
+        <span style="font-size:11px;color:#aaa;margin-left:8px">날짜에 맞는 공급가로 모든 정산 내역의 원가·순이익·마진율을 다시 계산합니다</span>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="supplierSettleCard">
     <h2>🏦 공급처 정산 현황 <span style="font-size:13px;font-weight:400;color:#888">— 소낭친환경</span></h2>
     <div id="supplierSettleBody" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px"></div>
     <div style="font-size:12px;color:#aaa;margin-top:4px">* <b>지급완료</b>: 실제 송금 기준 | <b>미지급</b>: 누적 원가 합계</div>
   </div>
   <div id="settleTableCard" class="card">
     <h2>📋 정산 내역 <span style="color:#888;font-size:13px;font-weight:400">— ✏️ 수정 가능 | <span id="filterTag" class="filter-tag hidden">필터 적용 중</span></span></h2>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button id="fpBtn0" class="btn btn-sm" style="background:#ff6b35;color:white;border-radius:20px" onclick="setPeriod('thisMonth')">이번달</button>
+      <button id="fpBtn1" class="btn btn-sm btn-outline" style="border-radius:20px" onclick="setPeriod('lastMonth')">지난달</button>
+      <button id="fpBtn2" class="btn btn-sm btn-outline" style="border-radius:20px" onclick="setPeriod('all')">전체</button>
+      <select id="fpMonthSel" class="filter-select" style="display:none;border-radius:20px" onchange="setPeriod('pick')">
+      </select>
+    </div>
     <div class="filter-bar">
       <label>🔍 구매자</label>
       <input class="filter-input" id="fName" placeholder="이름 검색..." style="width:110px" oninput="applyFilter()">
@@ -345,7 +406,91 @@ tr.editing td{background:#fffde7!important}
 /* ======================================================
    CONSTANTS & CONFIG
 ====================================================== */
-const SUPPLY={'2kg':12000,'3kg':15000,'5kg':21000};
+const SUPPLY={'2kg':12000,'3kg':15000,'5kg':21000}; // 기본값 (공급가 이력 없을 때 fallback)
+const SUPPLY_TIERS_SK='dolmang_supply_tiers_v1';
+
+function loadSupplyTiers(){
+  try{
+    const d=JSON.parse(localStorage.getItem(SUPPLY_TIERS_SK)||'null');
+    if(d&&d.length)return d;
+  }catch(e){}
+  // 초기값: 기존 하드코딩 이력
+  return[
+    {from:'2026-01-01',p2:12000,p3:15000,p5:21000},
+    {from:'2026-04-17',p2:11500,p3:14500,p5:20500}
+  ];
+}
+function saveSupplyTiers(tiers){localStorage.setItem(SUPPLY_TIERS_SK,JSON.stringify(tiers));}
+
+// 특정 날짜에 적용되는 공급가 반환
+function getSupplyForDate(dateStr){
+  const tiers=loadSupplyTiers().sort((a,b)=>a.from<b.from?-1:1);
+  let supply={p2:12000,p3:15000,p5:21000};
+  for(const t of tiers){if(dateStr>=t.from)supply=t;}
+  return{'2kg':supply.p2,'3kg':supply.p3,'5kg':supply.p5};
+}
+
+function renderSupplyTiers(){
+  const tiers=loadSupplyTiers().sort((a,b)=>a.from<b.from?-1:1);
+  const today=todayYMD();
+  const el=document.getElementById('supplyTierList');if(!el)return;
+  el.innerHTML=tiers.map((t,i)=>{
+    const isActive=tiers.slice(i+1).every(n=>today<n.from);
+    const badge=isActive?'<span style="background:#4caf50;color:white;padding:1px 7px;border-radius:10px;font-size:11px;margin-left:6px">현재적용</span>':'';
+    return`<div style="display:flex;align-items:center;gap:14px;padding:7px 10px;border-radius:6px;background:${isActive?'#f0fff4':'#fafafa'};margin-bottom:5px;font-size:13px">
+      <span style="font-weight:700;color:#ff6b35;min-width:90px">${t.from} ~${badge}</span>
+      <span>2kg <b>${comma(t.p2)}원</b></span>
+      <span>3kg <b>${comma(t.p3)}원</b></span>
+      <span>5kg <b>${comma(t.p5)}원</b></span>
+      ${i>0?`<button class="btn btn-danger btn-sm" style="margin-left:auto;font-size:11px" onclick="delSupplyTier(${i})">삭제</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function toggleSupplyMgr(){
+  const el=document.getElementById('supplyMgrEdit');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function addSupplyTier(){
+  const from=document.getElementById('supplyFromDate').value;
+  const p2=parseInt(document.getElementById('supplyP2').value)||0;
+  const p3=parseInt(document.getElementById('supplyP3').value)||0;
+  const p5=parseInt(document.getElementById('supplyP5').value)||0;
+  if(!from||!p2||!p3||!p5){alert('날짜와 2kg·3kg·5kg 공급가를 모두 입력하세요.');return;}
+  const tiers=loadSupplyTiers();
+  const idx=tiers.findIndex(t=>t.from===from);
+  if(idx>=0)tiers[idx]={from,p2,p3,p5};
+  else tiers.push({from,p2,p3,p5});
+  saveSupplyTiers(tiers);
+  renderSupplyTiers();
+  ['supplyFromDate','supplyP2','supplyP3','supplyP5'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ 공급가 구간 추가됨 ('+from+' ~)');
+}
+
+function delSupplyTier(i){
+  if(!confirm('이 구간을 삭제하시겠습니까?'))return;
+  const tiers=loadSupplyTiers();tiers.splice(i,1);saveSupplyTiers(tiers);renderSupplyTiers();
+}
+
+function recalcAllCosts(){
+  if(!confirm('모든 정산 내역의 원가·순이익·마진율을 날짜별 공급가로 재계산합니다.\n계속하시겠습니까?'))return;
+  const data=loadS();
+  let changed=0;
+  data.forEach(r=>{
+    const supply=getSupplyForDate(normDate(r.date));
+    const sz=extractSize(r.option);
+    const newCost=(supply[sz]||0)*r.qty;
+    if(newCost!==r.costPrice){
+      r.costPrice=newCost;
+      r.profit=r.salePrice-newCost-r.commission;
+      r.margin=r.salePrice>0?parseFloat((r.profit/r.salePrice*100).toFixed(1)):0;
+      changed++;
+    }
+  });
+  saveS(data);renderSettle();
+  toast(`✅ 재계산 완료 — ${changed}건 변경됨`);
+}
 const FEE_RT={'쿠팡':0.108,'스마트스토어':0.055,'발주방':0,'당근마켓':0};
 const SENDER={name:'돌망돌망',zip:'',addr:'제주특별자치도 서귀포시 표선면 서성일로 89',phone:'010-2272-3645'};
 const SK='dolmang_settle_v4'; // 2026-05-04 supplierPaid 추가 (4월 정산완료 반영) // 2026-04-29 발주서 기준 정산 재구성 (130건)
@@ -1002,9 +1147,7 @@ function onFileHist(inp){
     if(dateInput===null)return;
     fileDate=dateInput.trim()||fileDate;
 
-    // 날짜 기준 공급가 (4/17 이전: 구가격 / 이후: 현행)
-    const isNew=fileDate>='2026-04-17';
-    const SUPPLY2=isNew?{'2kg':11500,'3kg':14500,'5kg':20500}:{'2kg':12000,'3kg':15000,'5kg':21000};
+    const SUPPLY2=getSupplyForDate(fileDate); // 날짜별 공급가 이력에서 자동 조회
 
     const data=loadS();
     const ids=new Set(data.map(r=>String(r.orderId)));
@@ -1071,6 +1214,55 @@ function onFileHist(inp){
     if(added>0)document.getElementById('histSection').classList.add('hidden');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
+let _activePeriod='thisMonth';
+
+function setPeriod(p){
+  _activePeriod=p;
+  const today=todayYMD();
+  const thisM=today.slice(0,7);
+  const lastM=(()=>{const d=new Date(today);d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7);})();
+  const sel=document.getElementById('fpMonthSel');
+  // 버튼 스타일 토글
+  const btns=['fpBtn0','fpBtn1','fpBtn2'];
+  const activeIdx=p==='thisMonth'?0:p==='lastMonth'?1:p==='all'?2:-1;
+  btns.forEach((id,i)=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.background=i===activeIdx?'#ff6b35':'';
+    el.style.color=i===activeIdx?'white':'';
+    el.className=i===activeIdx?'btn btn-sm':'btn btn-sm btn-outline';
+    el.style.borderRadius='20px';
+  });
+  // 날짜 필드 자동 설정
+  const fFrom=document.getElementById('fFrom');
+  const fTo=document.getElementById('fTo');
+  if(p==='thisMonth'){
+    if(fFrom)fFrom.value=thisM+'-01';
+    if(fTo)fTo.value=today;
+    if(sel)sel.style.display='none';
+  } else if(p==='lastMonth'){
+    if(fFrom)fFrom.value=lastM+'-01';
+    const lastEnd=new Date(new Date(lastM+'-01').getFullYear(),new Date(lastM+'-01').getMonth()+1,0);
+    if(fTo)fTo.value=lastEnd.toISOString().slice(0,10);
+    if(sel)sel.style.display='none';
+  } else if(p==='all'){
+    if(fFrom)fFrom.value='';
+    if(fTo)fTo.value='';
+    if(sel)sel.style.display='none';
+  } else if(p==='pick'){
+    const mv=sel?sel.value:'';
+    if(fFrom&&mv)fFrom.value=mv+'-01';
+    if(fTo&&mv){const e=new Date(new Date(mv+'-01').getFullYear(),new Date(mv+'-01').getMonth()+1,0);fTo.value=e.toISOString().slice(0,10);}
+  }
+  renderSettle();
+}
+
+function buildMonthPicker(){
+  const sel=document.getElementById('fpMonthSel');if(!sel)return;
+  const all=loadS();
+  const months=[...new Set(all.map(r=>normDate(r.date).slice(0,7)))].sort().reverse();
+  sel.innerHTML='<option value="">월 선택</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
 function getFilteredData(){
   const name=(document.getElementById('fName')?.value||'').toLowerCase();
   const ch=document.getElementById('fChannel')?.value||'';
@@ -1091,6 +1283,7 @@ function applyFilter(){renderSettle();}
 function clearFilter(){
   ['fName','fFrom','fTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['fChannel','fOption'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _activePeriod='all';setPeriod('all');
   renderSettle();
 }
 
@@ -1136,6 +1329,9 @@ function renderSupplierSettle(){
       :'<span style="background:#f59e0b;color:white;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">⏳ 미지급</span>';
 
     const paidDateHtml=isPaid?`<div style="font-size:11px;color:#888;margin-top:1px">지급일: ${paidDate}</div>`:'';
+    const discount=isPaid&&paidAmt<g.costTotal?g.costTotal-paidAmt:0;
+    const discountHtml=discount>0
+      ?`<div style="font-size:12px;color:#1976d2;margin-top:2px">할인: <b>${comma(discount)}원</b> <span style="color:#aaa">(${((discount/g.costTotal)*100).toFixed(1)}%)</span></div>`:'';
     const paidAmtHtml=isPaid?`<div style="font-size:13px;font-weight:700;color:#4caf50;margin-top:4px">실지급: ${comma(paidAmt)}원</div>`:'';
 
     const card=document.createElement('div');
@@ -1143,7 +1339,7 @@ function renderSupplierSettle(){
     card.innerHTML=`
       <div style="font-size:15px;font-weight:700;margin-bottom:6px">${m} ${badge}</div>
       <div style="font-size:13px;color:#555">${g.records.length}건 | 원가합계 <b>${comma(g.costTotal)}원</b></div>
-      ${paidAmtHtml}${paidDateHtml}
+      ${paidAmtHtml}${discountHtml}${paidDateHtml}
       <div style="margin-top:8px">
         ${isPaid
           ?`<button class="btn btn-sm btn-outline" onclick="editSupplierPay('${m}')" style="font-size:11px">✏️ 수정</button>`
@@ -1200,21 +1396,34 @@ function editSupplierPay(month){
   toast(month+' 정산 수정됨');
 }
 
+let _summaryView='total';
+function switchSummaryView(v){
+  _summaryView=v;
+  document.getElementById('viewTotal').style.display=v==='total'?'':'none';
+  document.getElementById('viewMonth').style.display=v==='month'?'':'none';
+  document.getElementById('btnViewTotal').classList.toggle('active',v==='total');
+  document.getElementById('btnViewMonth').classList.toggle('active',v==='month');
+}
+
 function renderSettle(){
   renderSupplierSettle();
-  const all=loadS();
-  const filtered=getFilteredData();
+  const all=loadS();           // 전체 데이터 — 요약/월별에 사용
+  const filtered=getFilteredData(); // 기간필터 적용 — 테이블에만 사용
+
+  // 필터 상태 표시
   const isFiltered=(filtered.length!==all.length);
   if(isFiltered){show('filterTag');document.getElementById('filterCount').textContent=filtered.length+'/'+all.length+'건 표시';}
   else{hide('filterTag');document.getElementById('filterCount').textContent=all.length+'건';}
+
+  // ── 전체 합계 요약 (all 기준) ──
   let tS=0,tC=0,tF=0,tP=0,c2=0,c3=0,c5=0;
-  filtered.forEach(r=>{
+  all.forEach(r=>{
     tS+=r.salePrice;tC+=r.costPrice;tF+=r.commission;tP+=r.profit;
     const sz=extractSize(r.option);
     if(sz==='2kg')c2+=r.qty;else if(sz==='3kg')c3+=r.qty;else if(sz==='5kg')c5+=r.qty;
   });
   const tM=tS>0?tP/tS*100:0;
-  document.getElementById('s2count').textContent=filtered.length;
+  document.getElementById('s2count').textContent=all.length;
   document.getElementById('s2sales').textContent=comma(tS)+'원';
   document.getElementById('s2sonang').textContent=comma(tC)+'원';
   document.getElementById('s2fee').textContent=comma(tF)+'원';
@@ -1223,6 +1432,37 @@ function renderSettle(){
   document.getElementById('s2_2kg').textContent=c2+'개';
   document.getElementById('s2_3kg').textContent=c3+'개';
   document.getElementById('s2_5kg').textContent=c5+'개';
+
+  // ── 월별 요약 (all 기준) ──
+  const months={};
+  all.forEach(r=>{
+    const m=normDate(r.date).slice(0,7);
+    if(!months[m])months[m]={cnt:0,sale:0,cost:0,fee:0,profit:0,c2:0,c3:0,c5:0};
+    const mo=months[m];
+    mo.cnt++;mo.sale+=r.salePrice;mo.cost+=r.costPrice;mo.fee+=r.commission;mo.profit+=r.profit;
+    const sz=extractSize(r.option);
+    if(sz==='2kg')mo.c2+=r.qty;else if(sz==='3kg')mo.c3+=r.qty;else if(sz==='5kg')mo.c5+=r.qty;
+  });
+  const tbody2=document.getElementById('tbodyMonth');tbody2.innerHTML='';
+  const mKeys=Object.keys(months).sort();
+  mKeys.forEach(m=>{
+    const mo=months[m];const mg=mo.sale>0?mo.profit/mo.sale*100:0;
+    const pc=mo.profit>=0?'pos':'neg';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${m}</td><td>${mo.cnt}건</td><td>${comma(mo.sale)}원</td><td>${comma(mo.cost)}원</td>
+      <td>${comma(mo.fee)}원</td><td class="${pc}">${comma(mo.profit)}원</td><td>${mg.toFixed(1)}%</td>
+      <td>${mo.c2}개</td><td>${mo.c3}개</td><td>${mo.c5}개</td>`;
+    tbody2.appendChild(tr);
+  });
+  if(mKeys.length>1){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>합계</td><td>${all.length}건</td><td>${comma(tS)}원</td><td>${comma(tC)}원</td>
+      <td>${comma(tF)}원</td><td class="${tP>=0?'pos':'neg'}">${comma(tP)}원</td><td>${tM.toFixed(1)}%</td>
+      <td>${c2}개</td><td>${c3}개</td><td>${c5}개</td>`;
+    tbody2.appendChild(tr);
+  }
+
+  // ── 정산 내역 테이블 (filtered 기준) ──
   const tbody=document.getElementById('tbodySettle');tbody.innerHTML='';
   if(!filtered.length){show('emptyMsg');return;}
   hide('emptyMsg');
@@ -1395,6 +1635,9 @@ async function loadOrdersForTab0(){
     setSyncStatus('err','구글시트 연결 실패 — 로컬 데이터 사용');
     console.warn('GAS load failed:',e);
   }
+  renderSupplyTiers();
+  buildMonthPicker();
+  setPeriod('thisMonth');
   renderSettle();
 })();
 </script>
