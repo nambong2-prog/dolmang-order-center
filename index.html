@@ -672,17 +672,21 @@ function onFile0(inp){
   readXlsx(_f0).then(wb=>{
     const{platform,orders}=parseDelivery(wb,_f0.name);
     rawWb0s[platform]=wb;  // 플랫폼별 원본 wb 저장 (쿠팡 업로드 포맷 보존용)
-    // 같은 플랫폼 주문만 교체, 다른 플랫폼 주문은 그대로 유지
-    const newIds=new Set(orders.map(o=>o.orderId));
+    // 누적 합산 — 같은 플랫폼 기존 주문 유지하고 중복(orderId) 제거 후 신규만 추가
     const keepOthers=orders0.filter(o=>o.platform!==platform);
-    orders0=[...keepOthers,...orders];
+    const samePlatform=orders0.filter(o=>o.platform===platform);
+    const existIds=new Set(samePlatform.map(o=>String(o.orderId)));
+    const newUnique=orders.filter(o=>!existIds.has(String(o.orderId)));
+    const dupCount=orders.length-newUnique.length;
+    orders0=[...keepOthers,...samePlatform,...newUnique];
     renderPreview0();show('preview0');
     scheduleOrdersSave();  // 구글시트에 주문 자동 저장
     // 플랫폼별 합계 표시
     const summary=Object.entries(
       orders0.reduce((a,o)=>{a[o.platform]=(a[o.platform]||0)+1;return a;},{})
     ).map(([p,n])=>p+' '+n+'건').join(' + ');
-    toast('✅ '+platform+' '+orders.length+'건 로드 → 전체 '+orders0.length+'건 ('+summary+')');
+    const dupMsg=dupCount>0?' (중복 '+dupCount+'건 제거)':'';
+    toast('✅ '+platform+' 신규 '+newUnique.length+'건 추가'+dupMsg+' → 전체 '+orders0.length+'건 ('+summary+')');
   }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
 }
 function renderPreview0(){
