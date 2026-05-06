@@ -299,6 +299,7 @@ tr.editing td{background:#fffde7!important}
       <button class="btn btn-cloud" onclick="loadFromGAS()">☁️ 구글시트 불러오기</button>
       <button class="btn btn-cloud" onclick="saveToGASManual()">☁️ 구글시트 저장</button>
       <button class="btn btn-outline" onclick="toggleHistSection()">📂 이전 주문 추가</button>
+      <button class="btn btn-outline" onclick="deduplicateSettlement()" style="color:#e67e00;border-color:#e67e00">🔧 중복 제거</button>
       <button class="btn btn-danger" style="margin-left:auto" onclick="clearSettlement()">🗑️ 초기화</button>
     </div>
     <div class="sync-row">
@@ -551,14 +552,26 @@ async function loadFromGAS(){
       orders0=[...orders0,...newOrders];
       if(orders0.length>0){renderPreview0();show('preview0');}
     }
-    // ── 정산 복원 ──────────────────────────────────────
+    // ── 정산 복원 (로컬+GAS 병합 — 어느 쪽에만 있는 건도 보존) ──
     if(data.settlement&&data.settlement.length>0){
-      const normalized=data.settlement.map(r=>({...r,date:normDate(r.date)}));
-      localStorage.setItem(SK,JSON.stringify(normalized));
+      const gasData=data.settlement.map(r=>({...r,date:normDate(r.date)}));
+      const local=loadS();
+      // GAS에 없는 로컬 레코드(다른 PC에서 아직 못 받은 것) 보존
+      const gasIds=new Set(gasData.map(r=>String(r.orderId)));
+      const localOnly=local.filter(r=>!gasIds.has(String(r.orderId)));
+      const merged=[...gasData,...localOnly];
+      localStorage.setItem(SK,JSON.stringify(merged));
+      // 로컬에만 있던 게 있으면 GAS에도 즉시 반영
+      if(localOnly.length>0){
+        saveToGAS(merged);
+        setSyncStatus('ok','병합 저장 완료 (GAS '+gasData.length+'건 + 로컬 '+localOnly.length+'건)');
+        toast('✅ 병합 완료 — 총 '+merged.length+'건 (로컬 '+localOnly.length+'건 GAS에 추가됨)');
+      }else{
+        const oMsg=data.orders&&data.orders.length>0?' / 주문 '+data.orders.length+'건':'';
+        setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+merged.length+'건'+oMsg+')');
+        toast('✅ 구글시트 불러오기 완료 — 정산 '+merged.length+'건');
+      }
       renderSettle();
-      const oMsg=data.orders&&data.orders.length>0?' / 주문 '+data.orders.length+'건':'';
-      setSyncStatus('ok','구글시트 불러오기 완료 (정산 '+data.settlement.length+'건'+oMsg+')');
-      toast('✅ 구글시트 불러오기 완료 — 정산 '+data.settlement.length+'건'+(data.orders&&data.orders.length?', 주문 '+orders0.length+'건':''));
     }else{
       setSyncStatus('ok','구글시트 정산 데이터 없음'+(orders0.length?' / 주문 '+orders0.length+'건 복원':''));
       if(!data.orders||!data.orders.length)toast('구글시트에 저장된 데이터가 없습니다.');
@@ -588,7 +601,27 @@ function saveToGASManual(){
 function scheduleAutoSave(data){
   clearTimeout(gasTimer);
   setSyncStatus('spin','저장 예정...');
-  gasTimer=setTimeout(()=>saveToGAS(data),3000);
+  gasTimer=setTimeout(async()=>{
+    try{
+      // 저장 전 GAS 최신 데이터 가져와서 병합 — 다른 PC 데이터 손실 방지
+      const res=await fetch(GAS_URL+'?action=getAll&t='+Date.now());
+      const remote=await res.json();
+      if(remote.settlement&&remote.settlement.length>0){
+        const gasData=remote.settlement.map(r=>({...r,date:normDate(r.date)}));
+        const gasIds=new Set(gasData.map(r=>String(r.orderId)));
+        const localOnly=data.filter(r=>!gasIds.has(String(r.orderId)));
+        const merged=[...gasData,...localOnly];
+        // 로컬도 최신으로 업데이트
+        localStorage.setItem(SK,JSON.stringify(merged));
+        saveToGAS(merged);
+      }else{
+        saveToGAS(data);
+      }
+    }catch(e){
+      // GAS 연결 실패 시 그냥 덮어쓰기 (기존 동작)
+      saveToGAS(data);
+    }
+  },3000);
 }
 // 주문(orders0) 구글시트 저장 — rawRow 등 대용량 필드 제외
 // orders0가 비어있어도 저장해야 GAS 데이터가 지워짐
@@ -1106,12 +1139,15 @@ function addToSettlement(){
   orders1.forEach(o=>{
     if(!o.trk||ids.has(String(o.orderId)))return;
     const feeR=FEE_RT[o.platform]??0.108;  // 주문별 플랫폼 수수료
-    const sz=extractSize(o.option);const cost=(SUPPLY[sz]||0)*o.qty;
-    const fee=Math.round(o.payment*feeR);const profit=o.payment-cost-fee;
-    const margin=o.payment>0?profit/o.payment*100:0;
+    const sz=extractSize(o.option);
+    const totalPayment=o.payment*o.qty;  // 단가×수량 = 총 판매가
+    const cost=getSupplyForDate(o.orderDate||todayYMD())[sz]||0;
+    const totalCost=cost*o.qty;
+    const fee=Math.round(totalPayment*feeR);const profit=totalPayment-totalCost-fee;
+    const margin=totalPayment>0?profit/totalPayment*100:0;
     data.push({orderId:o.orderId,date:o.orderDate||todayYMD(),name:o.name,
-      platform:o.platform,option:o.option,qty:o.qty,salePrice:o.payment,
-      costPrice:cost,commission:fee,profit,margin:parseFloat(margin.toFixed(1)),
+      platform:o.platform,option:o.option,qty:o.qty,salePrice:totalPayment,
+      costPrice:totalCost,commission:fee,profit,margin:parseFloat(margin.toFixed(1)),
       trackNum:o.trk.trackNum,carrier:o.trk.carrier});
     added++;
   });
@@ -1526,9 +1562,29 @@ function delSettle(oid){
   const data=loadS().filter(r=>String(r.orderId)!==String(oid));
   saveS(data);renderSettle();toast('삭제됨');
 }
+function deduplicateSettlement(){
+  const data=loadS();
+  const seen=new Set();
+  const deduped=data.filter(r=>{
+    const key=String(r.orderId);
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  });
+  const removed=data.length-deduped.length;
+  if(removed===0){toast('중복 항목이 없습니다.');return;}
+  if(!confirm(`중복 ${removed}건을 제거합니다. (${data.length}건 → ${deduped.length}건)\n계속하시겠습니까?`))return;
+  saveS(deduped);renderSettle();
+  toast(`✅ 중복 ${removed}건 제거 완료 — ${deduped.length}건 남음`);
+}
 function clearSettlement(){
-  if(!confirm('정산 데이터 전체를 삭제하시겠습니까?\n되돌릴 수 없습니다.'))return;
-  localStorage.removeItem(SK);renderSettle();toast('초기화 완료');
+  if(!confirm('정산 데이터 전체를 삭제하시겠습니까?\n로컬 + 구글시트 모두 삭제됩니다. 되돌릴 수 없습니다.'))return;
+  localStorage.removeItem(SK);
+  // 구글시트도 빈 배열로 덮어쓰기
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'saveAll',settlement:[]})})
+    .then(()=>setSyncStatus('ok','초기화 완료'))
+    .catch(()=>setSyncStatus('err','로컬 초기화 완료 (구글시트 연결 실패)'));
+  renderSettle();toast('✅ 초기화 완료 — 로컬 + 구글시트 비움');
 }
 function downloadSettlement(){
   const data=getFilteredData();if(!data.length){toast('정산 데이터가 없습니다.');return;}
