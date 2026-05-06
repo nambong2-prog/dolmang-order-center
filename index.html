@@ -616,7 +616,12 @@ function scheduleAutoSave(data){
         const localOnly=data.filter(r=>!gasIds.has(String(r.orderId)));
         const merged=dedupByOrderId([...gasData,...localOnly]);
         localStorage.setItem(SK,JSON.stringify(merged));
-        saveToGAS(merged);
+        // 로컬에만 있던 새 데이터가 있을 때만 GAS 저장 (불필요한 중복 쓰기 방지)
+        if(localOnly.length>0){
+          saveToGAS(merged);
+        }else{
+          setSyncStatus('ok','구글시트 동기화 완료 (변경 없음)');
+        }
       }else{
         saveToGAS(data);
       }
@@ -1287,8 +1292,9 @@ function processSonangFile(f, done){
       added++;
     }
 
-    saveS(data);renderSettle();
+    if(added>0){saveS(data);renderSettle();}
     if(typeof done==='function'){done(added,skipped,failed);return;}
+    if(!added){toast('⏭️ 새 데이터 없음 — 모두 중복 스킵');return;}
     let msg=`✅ ${added}건 추가됨`;
     if(skipped)msg+=` (중복 ${skipped}건 스킵)`;
     if(failed)msg+=` (옵션불명 ${failed}건 제외)`;
