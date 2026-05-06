@@ -309,7 +309,7 @@ tr.editing td{background:#fffde7!important}
     <div class="hist-section hidden" id="histSection">
       <h3>📂 소낭친환경 송장파일로 정산 추가 <span style="font-weight:400;color:#888;font-size:12px">— 소낭에서 받은 발주_송장번호.xlsx 파일 업로드</span></h3>
       <div class="file-area" id="dropHist" style="min-height:70px">
-        <input type="file" id="fileHist" accept=".xlsx,.xls" onchange="onFileHist(this)">
+        <input type="file" id="fileHist" accept=".xlsx,.xls" multiple onchange="onFileHist(this)">
         <div class="icon">📦</div>
         <div class="label">소낭친환경 발주_송장번호.xlsx 업로드 → 정산 자동 추가<br><span style="font-size:11px;color:#aaa">중복 송장번호는 자동 스킵됩니다</span></div>
         <div class="filename" id="fnameHist"></div>
@@ -387,7 +387,7 @@ tr.editing td{background:#fffde7!important}
       <table>
         <thead>
           <tr>
-            <th>#</th><th>날짜</th><th>구매자</th><th>채널</th>
+            <th>#</th><th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">날짜 <span id="dateSortArrow">▼</span></th><th>구매자</th><th>채널</th>
             <th>옵션</th><th>수량</th><th>판매가</th><th>매입가</th>
             <th>수수료</th><th>순이익</th><th>마진율</th><th>송장번호</th><th>수정/삭제</th>
           </tr>
@@ -522,6 +522,10 @@ const extractSize=opt=>{const m=String(opt||'').match(/(\d+)\s*kg/i);return m?m[
 const todayYMD=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const todayMMDD=()=>todayYMD().replace(/-/g,'').slice(4);
 const comma=n=>Math.round(n).toLocaleString('ko-KR');
+const safeMargin=v=>{const n=Number(v);return(isFinite(n)?n:0).toFixed(1)+'%';};
+// orderId 기준 중복 제거 — 뒤에 것 우선(최신 편집 반영)
+const dedupByOrderId=arr=>{const m=new Map();arr.forEach(r=>m.set(String(r.orderId),r));return[...m.values()];};
+
 const fmtPhone=p=>{const d=String(p||'');if(d.length===11)return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);if(d.length===10)return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);return d;};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const normDate=d=>{if(!d)return'';const s=String(d);if(s.includes('T')){const kst=new Date(new Date(s).getTime()+9*3600000);return kst.toISOString().slice(0,10);}return s.slice(0,10);};
@@ -559,7 +563,7 @@ async function loadFromGAS(){
       // GAS에 없는 로컬 레코드(다른 PC에서 아직 못 받은 것) 보존
       const gasIds=new Set(gasData.map(r=>String(r.orderId)));
       const localOnly=local.filter(r=>!gasIds.has(String(r.orderId)));
-      const merged=[...gasData,...localOnly];
+      const merged=dedupByOrderId([...gasData,...localOnly]);
       localStorage.setItem(SK,JSON.stringify(merged));
       // 로컬에만 있던 게 있으면 GAS에도 즉시 반영
       if(localOnly.length>0){
@@ -610,8 +614,7 @@ function scheduleAutoSave(data){
         const gasData=remote.settlement.map(r=>({...r,date:normDate(r.date)}));
         const gasIds=new Set(gasData.map(r=>String(r.orderId)));
         const localOnly=data.filter(r=>!gasIds.has(String(r.orderId)));
-        const merged=[...gasData,...localOnly];
-        // 로컬도 최신으로 업데이트
+        const merged=dedupByOrderId([...gasData,...localOnly]);
         localStorage.setItem(SK,JSON.stringify(merged));
         saveToGAS(merged);
       }else{
@@ -682,7 +685,20 @@ function clearGasOrders(){
 /* ======================================================
    LOCAL STORAGE
 ====================================================== */
-function loadS(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
+function loadS(){
+  try{
+    const data=JSON.parse(localStorage.getItem(SK)||'[]');
+    const deduped=dedupByOrderId(data);
+    return deduped.map(r=>{
+      const margin=Number(r.margin);
+      if(!isFinite(margin)){
+        const s=Number(r.salePrice)||0,p=Number(r.profit)||0;
+        return{...r,margin:s>0?parseFloat((p/s*100).toFixed(1)):0};
+      }
+      return r;
+    });
+  }catch(e){return[];}
+}
 function saveS(d){localStorage.setItem(SK,JSON.stringify(d));scheduleAutoSave(d);}
 
 /* ======================================================
@@ -1169,8 +1185,36 @@ function toggleHistSection(){
   document.getElementById('histSection').classList.toggle('hidden');
 }
 function onFileHist(inp){
-  const f=inp.files[0];if(!f)return;
+  const files=Array.from(inp.files||[]);if(!files.length)return;
+  if(files.length>1){
+    // 여러 파일: 순차 처리
+    let idx=0;
+    let totalAdded=0,totalSkipped=0,totalFailed=0;
+    function processNext(){
+      if(idx>=files.length){
+        toast(`✅ ${files.length}개 파일 완료 — 추가 ${totalAdded}건`+(totalSkipped?` (중복 ${totalSkipped}건 스킵)`:'')+( totalFailed?` (실패 ${totalFailed}건)`:''));
+        renderSettle();
+        return;
+      }
+      const f=files[idx++];
+      setLabel('dropHist','fnameHist',f.name+' ('+idx+'/'+files.length+')');
+      processSonangFile(f,(added,skipped,failed)=>{totalAdded+=added;totalSkipped+=skipped;totalFailed+=failed;processNext();});
+    }
+    processNext();
+    return;
+  }
+  const f=files[0];
   setLabel('dropHist','fnameHist',f.name);
+  processSonangFile(f,(added,skipped,failed)=>{
+    let msg=`✅ ${added}건 추가됨`;
+    if(skipped)msg+=` (중복 ${skipped}건 스킵)`;
+    if(failed)msg+=` (옵션불명 ${failed}건 제외)`;
+    toast(msg);
+    if(added>0)document.getElementById('histSection').classList.add('hidden');
+  });
+}
+
+function processSonangFile(f, done){
   readXlsx(f).then(wb=>{
     // ── 소낭친환경 발주_송장번호 파일 파싱 ──
     const ws=wb.Sheets[wb.SheetNames[0]];
@@ -1227,10 +1271,11 @@ function onFileHist(inp){
       const costPrice=(SUPPLY2[sz]||0)*qtyA;
       const feeR=FEE_RT[platform]||0;
 
-      // 판매가: 플랫폼별 기본값 (수정 가능)
+      // 판매가: 플랫폼별 기본값 (수정 가능) — 발주방은 수수료 0%, 쿠팡과 동일 단가 적용
       const SALE_PRICE={'쿠팡':{'2kg':15900,'3kg':19900,'5kg':27900},
                         '스마트스토어':{'2kg':15400,'3kg':19400,'5kg':27400},
-                        '발주방':{'2kg':0,'3kg':0,'5kg':0}};
+                        '발주방':{'2kg':15900,'3kg':19900,'5kg':27900},
+                        '당근마켓':{'2kg':15900,'3kg':19900,'5kg':27900}};
       const salePrice=((SALE_PRICE[platform]||{})[sz]||0)*qtyA;
       const commission=Math.round(salePrice*feeR);
       const profit=salePrice-costPrice-commission;
@@ -1243,12 +1288,27 @@ function onFileHist(inp){
     }
 
     saveS(data);renderSettle();
+    if(typeof done==='function'){done(added,skipped,failed);return;}
     let msg=`✅ ${added}건 추가됨`;
     if(skipped)msg+=` (중복 ${skipped}건 스킵)`;
     if(failed)msg+=` (옵션불명 ${failed}건 제외)`;
     toast(msg);
     if(added>0)document.getElementById('histSection').classList.add('hidden');
-  }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);});
+  }).catch(e=>{toast('❌ 오류: '+e.message);console.error(e);if(typeof done==='function')done(0,0,0);});
+}
+let _dateSort='desc'; // desc=최신순(▼), asc=오래된순(▲)
+function toggleDateSort(){
+  _dateSort=_dateSort==='desc'?'asc':'desc';
+  const arrow=document.getElementById('dateSortArrow');
+  if(arrow)arrow.textContent=_dateSort==='desc'?'▼':'▲';
+  renderSettle();
+}
+function getSortedFiltered(){
+  const data=getFilteredData();
+  return data.slice().sort((a,b)=>{
+    const da=normDate(a.date),db=normDate(b.date);
+    return _dateSort==='desc'?(db>da?1:db<da?-1:0):(da>db?1:da<db?-1:0);
+  });
 }
 let _activePeriod='thisMonth';
 
@@ -1464,7 +1524,7 @@ function renderSettle(){
   document.getElementById('s2sonang').textContent=comma(tC)+'원';
   document.getElementById('s2fee').textContent=comma(tF)+'원';
   document.getElementById('s2profit').textContent=comma(tP)+'원';
-  document.getElementById('s2margin').textContent=tM.toFixed(1)+'%';
+  document.getElementById('s2margin').textContent=safeMargin(tM);
   document.getElementById('s2_2kg').textContent=c2+'개';
   document.getElementById('s2_3kg').textContent=c3+'개';
   document.getElementById('s2_5kg').textContent=c5+'개';
@@ -1486,23 +1546,24 @@ function renderSettle(){
     const pc=mo.profit>=0?'pos':'neg';
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${m}</td><td>${mo.cnt}건</td><td>${comma(mo.sale)}원</td><td>${comma(mo.cost)}원</td>
-      <td>${comma(mo.fee)}원</td><td class="${pc}">${comma(mo.profit)}원</td><td>${mg.toFixed(1)}%</td>
+      <td>${comma(mo.fee)}원</td><td class="${pc}">${comma(mo.profit)}원</td><td>${safeMargin(mg)}</td>
       <td>${mo.c2}개</td><td>${mo.c3}개</td><td>${mo.c5}개</td>`;
     tbody2.appendChild(tr);
   });
   if(mKeys.length>1){
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>합계</td><td>${all.length}건</td><td>${comma(tS)}원</td><td>${comma(tC)}원</td>
-      <td>${comma(tF)}원</td><td class="${tP>=0?'pos':'neg'}">${comma(tP)}원</td><td>${tM.toFixed(1)}%</td>
+      <td>${comma(tF)}원</td><td class="${tP>=0?'pos':'neg'}">${comma(tP)}원</td><td>${safeMargin(tM)}</td>
       <td>${c2}개</td><td>${c3}개</td><td>${c5}개</td>`;
     tbody2.appendChild(tr);
   }
 
-  // ── 정산 내역 테이블 (filtered 기준) ──
+  // ── 정산 내역 테이블 (filtered + 날짜 정렬) ──
+  const sorted=getSortedFiltered();
   const tbody=document.getElementById('tbodySettle');tbody.innerHTML='';
-  if(!filtered.length){show('emptyMsg');return;}
+  if(!sorted.length){show('emptyMsg');return;}
   hide('emptyMsg');
-  filtered.forEach((r,i)=>{
+  sorted.forEach((r,i)=>{
     const pc=r.profit>=0?'profit-positive':'profit-negative';
     const isMulti=r.qty>1;
     const tr=document.createElement('tr');
@@ -1513,7 +1574,7 @@ function renderSettle(){
       <td><span class="badge ${r.platform==='쿠팡'?'badge-cp':r.platform==='발주방'?'badge-bj':'badge-ss'}">${esc(r.platform)}</span></td>
       <td>${esc(extractSize(r.option)||r.option)}</td>${qtyCell}
       <td>${comma(r.salePrice)}원</td><td>${comma(r.costPrice)}원</td><td>${comma(r.commission)}원</td>
-      <td class="${pc}">${comma(r.profit)}원</td><td>${Number(r.margin).toFixed(1)}%</td>
+      <td class="${pc}">${comma(r.profit)}원</td><td>${safeMargin(r.margin)}</td>
       <td style="font-size:11px">${esc(r.trackNum||'')}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="editSettle('${r.orderId}')">✏️</button>
@@ -1591,7 +1652,7 @@ function downloadSettlement(){
   const HDR=['#','날짜','구매자','채널','옵션','수량','판매가','매입가','수수료','순이익','마진율(%)','송장번호'];
   const aoa=[HDR];let tS=0,tC=0,tF=0,tP=0;
   data.forEach((r,i)=>{
-    aoa.push([i+1,normDate(r.date),r.name,r.platform,r.option,r.qty,r.salePrice,r.costPrice,r.commission,r.profit,parseFloat(Number(r.margin).toFixed(1)),r.trackNum||'']);
+    aoa.push([i+1,normDate(r.date),r.name,r.platform,r.option,r.qty,r.salePrice,r.costPrice,r.commission,r.profit,(isFinite(Number(r.margin))?parseFloat(Number(r.margin).toFixed(1)):0),r.trackNum||'']);
     tS+=r.salePrice;tC+=r.costPrice;tF+=r.commission;tP+=r.profit;
   });
   const tM=tS>0?tP/tS*100:0;
